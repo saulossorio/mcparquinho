@@ -1604,7 +1604,7 @@ function bytesText(n) {
 const state = {
   lib: null, ctx: null, buffer: null, sample: false, capped: false,
   visible: [], page: 0, pageSize: 100, rows: [], rowStart: 0, token: 0, active: null,
-  downloads: null, downloadsReady: null, downloadsChecked: false,
+  downloads: null, downloadsReady: null, downloadsChecked: false, downloadsWhy: '',
   exportMode: 'options', cancelExport: false, copyText: null, clip: null, drag: null,
 }
 const sleep = ms => new Promise(r => setTimeout(r, ms))
@@ -1627,13 +1627,43 @@ async function init() {
   await openSource(sampleSource(), true)
 }
 
+// Outside Claude (a normal website such as GitHub Pages) the page is not framed and can download with a plain link.
+const TOP_LEVEL = (() => { try { return window.top === window.self } catch { return false } })()
+const browserDownloads = {
+  browser: true,
+  async save({ filename, data }) {
+    const url = URL.createObjectURL(data instanceof Blob ? data : new Blob([data]))
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.append(a)
+    a.click()
+    a.remove()
+    return { status: 'saved', url }
+  },
+}
+
+// Inside Claude the runtime may expose the API as window.claude or as a global binding named claude.
+function claudeApi() {
+  // eslint-disable-next-line no-undef
+  const g = typeof claude !== 'undefined' ? claude : undefined
+  if (g && typeof g.use === 'function') return g
+  return window.claude && typeof window.claude.use === 'function' ? window.claude : null
+}
+
 function detectDownloads() {
   state.downloadsReady = (async () => {
-    for (let i = 0; i < 100 && !(window.claude && typeof window.claude.use === 'function'); i++) await sleep(100)
-    if (!window.claude || typeof window.claude.use !== 'function') return null
+    if (TOP_LEVEL && !claudeApi()) return browserDownloads
+    for (let i = 0; i < 100 && !claudeApi(); i++) await sleep(100)
+    const api = claudeApi()
+    if (!api) { state.downloadsWhy = 'a página não recebeu a API do Claude'; return null }
     try {
-      return (await window.claude.use('downloads')) ?? null
-    } catch {
+      const ns = await api.use('downloads')
+      if (!ns) state.downloadsWhy = 'o visualizador respondeu que downloads não estão disponíveis aqui'
+      else if (typeof ns.save !== 'function') state.downloadsWhy = 'a API de downloads veio sem a função save'
+      return ns ?? null
+    } catch (e) {
+      state.downloadsWhy = `erro ao pedir downloads: ${e?.message || e}`
       return null
     }
   })().then(ns => {
@@ -2273,7 +2303,8 @@ function updateAvailability() {
     note.textContent = 'Verificando se esta visualização permite baixar arquivos…'
   } else if (!state.downloads) {
     note.hidden = false
-    note.textContent = 'Esta visualização não permite baixar arquivos. Use “Copiar para colar no Excel”, ou abra o artefato pelo claude.ai num navegador de computador para baixar o .xlsx.'
+    note.textContent = 'Esta visualização não permite baixar arquivos. Use “Copiar para colar no Excel”, ou abra o artefato pelo claude.ai num navegador de computador para baixar o .xlsx.' +
+      (state.downloadsWhy ? ` (Detalhe: ${state.downloadsWhy}.)` : '')
   } else {
     note.hidden = true
   }
@@ -2402,15 +2433,29 @@ async function downloadXlsx() {
       isCancelled: () => state.cancelExport, onProgress: progress('Gravando'),
     })
     const filename = exportName(ctx, c)
-    $('exp-progress-text').textContent = `Arquivo pronto (${bytesText(blob.size)}). Confirme o download na janela que apareceu.`
+    if (!state.downloads.browser) $('exp-progress-text').textContent = `Arquivo pronto (${bytesText(blob.size)}). Confirme o download na janela que apareceu.`
     const res = await state.downloads.save({ filename, data: blob })
     ok = true
-    message = res?.status === 'delivered' ? `Arquivo entregue: ${filename}` : `Arquivo salvo: ${filename}`
+    if (res?.url) {
+      if (state.lastUrl) URL.revokeObjectURL(state.lastUrl)
+      state.lastUrl = res.url
+      state.lastName = filename
+    }
+    message = state.downloads.browser ? `Download iniciado: ${filename} (${bytesText(blob.size)}).`
+      : res?.status === 'delivered' ? `Arquivo entregue: ${filename}` : `Arquivo salvo: ${filename}`
   } catch (err) {
     message = exportErrorText(err)
   }
   setExportMode('done')
   showResult(message, ok ? 'ok' : 'bad')
+  if (ok && state.downloads?.browser && state.lastUrl) {
+    const again = document.createElement('a')
+    again.href = state.lastUrl
+    again.download = state.lastName
+    again.textContent = 'Se não baixou, clique aqui.'
+    again.className = 'linklike'
+    $('exp-result').append(' ', again)
+  }
 }
 
 // Step 1: read the rows. Step 2 (a new click) copies, because browsers only copy right after a click.
