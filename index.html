@@ -206,6 +206,50 @@ button, input, select { font: inherit; color: inherit; }
 .inline-error { margin: 0; padding: 8px 12px; border-radius: 7px; background: var(--danger-soft); color: var(--danger); font-size: var(--fs-s); }
 .hint { margin: 0; font-size: var(--fs-s); color: var(--muted); }
 
+/* Search, filter bar and column menus */
+.searchbox { position: relative; display: flex; align-items: center; }
+.searchbox svg { position: absolute; left: 9px; color: var(--muted); pointer-events: none; }
+.searchbox input {
+  height: 30px; width: 210px; padding: 0 10px 0 28px; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--surface); font-size: var(--fs-s);
+}
+.qbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 7px 12px; border-radius: 8px; background: var(--accent-soft); font-size: var(--fs-s); }
+.qbar p { margin: 0; flex: 1; min-width: 200px; }
+.qbar.error { background: var(--danger-soft); color: var(--danger); }
+.qbar.error .linklike { color: inherit; }
+.hcell { display: flex; align-items: flex-start; gap: 8px; }
+.hname { flex: 1; min-width: 0; }
+.hbtn {
+  flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 2px; min-width: 22px; height: 22px; padding: 0 4px;
+  border: 1px solid var(--line); border-radius: 5px; background: var(--surface); color: var(--muted); cursor: pointer; font: 600 12px/1 var(--font-body);
+}
+.hbtn:hover { border-color: var(--accent); color: var(--accent); }
+.hbtn.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.hmenu {
+  position: fixed; z-index: 30; width: 310px; max-width: calc(100vw - 16px); overflow: auto; padding: 8px;
+  display: flex; flex-direction: column; gap: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow);
+}
+.hmenu > * { flex-shrink: 0; }
+.hmenu > #hm-list { flex-shrink: 1; min-height: 90px; }
+.hm-item { display: block; width: 100%; text-align: left; padding: 6px 8px; border: 0; border-radius: 6px; background: none; cursor: pointer; }
+.hm-item:hover, .hm-item:focus-visible { background: var(--bg); }
+.hm-sep { border: 0; border-top: 1px solid var(--line); margin: 2px 0; width: 100%; }
+.hm-cond { display: flex; flex-direction: column; gap: 5px; font-size: var(--fs-s); color: var(--muted); }
+.hm-cond select, .hm-cond input, .hmenu input[type="search"] {
+  height: 30px; min-width: 0; border: 1px solid var(--line); border-radius: 6px; padding: 0 8px; background: var(--surface); font-size: var(--fs-s); color: var(--ink);
+}
+.hm-cond .row { display: flex; gap: 6px; align-items: center; }
+.hm-cond .row input { flex: 1; }
+.hm-all { display: flex; gap: 8px; align-items: center; padding: 2px 4px; font-size: var(--fs-s); cursor: pointer; }
+#hm-list { list-style: none; margin: 0; padding: 0; max-height: 230px; overflow: auto; border: 1px solid var(--line); border-radius: 6px; }
+#hm-list label { display: flex; gap: 8px; align-items: center; padding: 4px 8px; cursor: pointer; font-size: var(--fs-s); }
+#hm-list label:hover { background: var(--bg); }
+#hm-list .v { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#hm-list .v.dim { color: var(--muted); font-style: italic; }
+#hm-list .cnt { flex: none; color: var(--muted); font-variant-numeric: tabular-nums; font-size: var(--fs-xs); }
+.hmenu .row.end { display: flex; justify-content: flex-end; gap: 6px; }
+.hmenu .hint:empty { display: none; }
+
 /* Column picker */
 .picker-wrap { position: relative; }
 .picker {
@@ -376,6 +420,7 @@ dialog::backdrop { background: rgb(8 14 17 / 45%); }
   .rgmap .where { display: none; }
   .rgdetails > summary, .rghead { grid-template-columns: 50px repeat(2, 1fr); }
   .rgdetails > summary .opt, .rghead .opt { display: none; }
+  .searchbox, .searchbox input { width: 100%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -457,6 +502,10 @@ dialog::backdrop { background: rgb(8 14 17 / 45%); }
       <label class="field" id="muni-field" for="muni-col" hidden>Município
         <select id="muni-col"><option value="">não mostrar</option></select>
       </label>
+      <div class="searchbox">
+        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="6" cy="6" r="4.3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="m9.2 9.2 3.3 3.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <input type="search" id="q" placeholder="Buscar nas colunas" aria-label="Buscar em todas as colunas visíveis" autocomplete="off">
+      </div>
       <div class="spacer"></div>
       <div class="pager">
         <button class="btn small icon" id="pg-first" type="button" aria-label="Primeira página">«</button>
@@ -480,6 +529,10 @@ dialog::backdrop { background: rgb(8 14 17 / 45%); }
       </label>
     </div>
     <p class="hint" id="cols-hint" hidden></p>
+    <div class="qbar" id="qbar" role="status" hidden>
+      <p id="qbar-text"></p>
+      <button class="linklike" id="qbar-clear" type="button">Limpar busca, filtros e ordem</button>
+    </div>
     <p class="inline-error" id="data-error" role="alert" hidden></p>
     <div class="grid-wrap" id="grid-wrap" tabindex="0" aria-label="Linhas do arquivo. Use as setas para andar entre as células e Enter para ver o valor completo.">
       <div class="loadbar" id="loadbar" hidden></div>
@@ -530,7 +583,7 @@ dialog::backdrop { background: rgb(8 14 17 / 45%); }
           <legend>Linhas</legend>
           <label class="opt"><input type="radio" name="exp-rows" value="page" checked> <span id="exp-page-label">Página atual</span></label>
           <label class="opt"><input type="radio" name="exp-rows" value="all"> <span id="exp-all-label">Todas as linhas</span></label>
-          <label class="opt"><input type="radio" name="exp-rows" value="range"> Intervalo: da linha
+          <label class="opt" id="exp-range-opt"><input type="radio" name="exp-rows" value="range"> Intervalo: da linha
             <input type="number" id="exp-from" min="1" step="1" aria-label="Primeira linha"> até
             <input type="number" id="exp-to" min="1" step="1" aria-label="Última linha"></label>
         </fieldset>
@@ -567,6 +620,32 @@ dialog::backdrop { background: rgb(8 14 17 / 45%); }
     </footer>
   </form>
 </dialog>
+
+<div class="hmenu" id="hmenu" role="dialog" aria-label="Ordenar e filtrar" hidden>
+  <button class="hm-item" id="hm-asc" type="button"></button>
+  <button class="hm-item" id="hm-desc" type="button"></button>
+  <button class="hm-item" id="hm-unsort" type="button">Tirar a ordenação</button>
+  <button class="hm-item" id="hm-clear" type="button"></button>
+  <hr class="hm-sep">
+  <div class="hm-cond" id="hm-cond">
+    <label for="hm-op">Mostrar as linhas em que o valor</label>
+    <select id="hm-op"></select>
+    <div class="row" id="hm-args" hidden>
+      <input id="hm-a" type="text" autocomplete="off" aria-label="Valor da condição">
+      <span id="hm-and" hidden>e</span>
+      <input id="hm-b" type="text" autocomplete="off" aria-label="Segundo valor" hidden>
+    </div>
+  </div>
+  <input type="search" id="hm-search" placeholder="Buscar valores" aria-label="Buscar valores da coluna" autocomplete="off">
+  <label class="hm-all"><input type="checkbox" id="hm-all"> (Selecionar tudo)</label>
+  <ul id="hm-list"></ul>
+  <p class="hint" id="hm-note"></p>
+  <p class="inline-error" id="hm-error" hidden></p>
+  <div class="row end">
+    <button class="btn small" id="hm-cancel" type="button">Cancelar</button>
+    <button class="btn small primary" id="hm-ok" type="button">Aplicar</button>
+  </div>
+</div>
 
 <div class="drop" id="drop" hidden><div>Solte o arquivo .parquet para abrir</div></div>
 
@@ -1449,7 +1528,14 @@ const NS_MAIN = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'
 const NS_REL = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships'
 const NS_PKG = 'http://schemas.openxmlformats.org/package/2006/relationships'
 
-async function writeXlsx(ctx, { start, end, names, derived, onProgress, isCancelled, exact = true, sheetName = 'Dados' }) {
+// Chunks over [start, end) for a reader that returns rows by position (a filtered or sorted list in memory).
+function plainChunks(start, end, size = 50000) {
+  const out = []
+  for (let s = start; s < end; s += size) out.push([s, Math.min(end, s + size), -1])
+  return out
+}
+
+async function writeXlsx(ctx, { start, end, names, derived, read, onProgress, isCancelled, exact = true, sheetName = 'Dados' }) {
   const cols = outputColumns(ctx, names, derived)
   if (end - start > EXCEL_MAX_DATA_ROWS) throw new ParquetError(`O Excel aceita até ${EXCEL_MAX_DATA_ROWS.toLocaleString('pt-BR')} linhas por planilha.`)
   if (cols.length > EXCEL_MAX_COLUMNS) throw new ParquetError(`O Excel aceita até ${EXCEL_MAX_COLUMNS.toLocaleString('pt-BR')} colunas.`)
@@ -1473,10 +1559,10 @@ async function writeXlsx(ctx, { start, end, names, derived, onProgress, isCancel
       '</cols><sheetData><row r="1">' +
       cols.map((c, k) => `<c r="${letters[k]}1" t="inlineStr" s="1"><is><t xml:space="preserve">${xmlText(fitText(c.header))}</t></is></c>`).join('') +
       '</row>'
-    for (const [a, b, g] of exportChunks(ctx, start, end)) {
+    for (const [a, b, g] of read ? plainChunks(start, end) : exportChunks(ctx, start, end)) {
       if (isCancelled?.()) throw new DOMException('Exportação cancelada', 'AbortError')
       cache.setGroup(g)
-      const rows = await readRows(ctx, a, b, names, cache.buffer)
+      const rows = read ? await read(a, b) : await readRows(ctx, a, b, names, cache.buffer)
       for (let i = 0; i < rows.length; i++) {
         const r = done + i + 2
         const row = rows[i]
@@ -1543,7 +1629,7 @@ const COPY_MAX_CELLS = 200000
 const htmlText = s => s.replace(/[&<>"]/g, c => (c === '&' ? '&amp;' : c === '<' ? '&lt;' : c === '>' ? '&gt;' : '&quot;'))
 const msoFormat = z => z.replace(/([-:. @\\])/g, '\\$1')
 
-async function clipboardTable(ctx, { start, end, names, derived, exact = true, onProgress, isCancelled }) {
+async function clipboardTable(ctx, { start, end, names, derived, read, exact = true, onProgress, isCancelled }) {
   const cols = outputColumns(ctx, names, derived)
   const oneLine = s => s.replace(/[\t\r\n]+/g, ' ')
   const textStyle = ` style="mso-number-format:'${msoFormat('@')}'"`
@@ -1551,9 +1637,9 @@ async function clipboardTable(ctx, { start, end, names, derived, exact = true, o
   const parts = ['<tr>' + cols.map(c => `<th>${htmlText(c.header)}</th>`).join('') + '</tr>']
   const total = end - start
   let done = 0
-  for (const [a, b] of exportChunks(ctx, start, end)) {
+  for (const [a, b] of read ? plainChunks(start, end) : exportChunks(ctx, start, end)) {
     if (isCancelled?.()) throw new DOMException('Cópia cancelada', 'AbortError')
-    const rows = await readRows(ctx, a, b, names)
+    const rows = read ? await read(a, b) : await readRows(ctx, a, b, names)
     for (const row of rows) {
       let tr = '<tr>'
       const cells = []
@@ -1586,6 +1672,256 @@ async function clipboardTable(ctx, { start, end, names, derived, exact = true, o
   const html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" ' +
     'xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"></head><body><table>' + parts.join('') + '</table></body></html>'
   return { html, text: lines.join('\r\n') + '\r\n' }
+}
+
+// ---- search, filter and sort over columns held in memory ----
+const MAX_TABLE_CELLS = 5000000
+const EMPTY_KEY = '\u0000'
+const OUT_KEY = '\u0001'
+const TEXT_LEAF = { kind: 'leaf', cat: 'string', label: 'string' }
+
+const NON_ASCII = /[^\x00-\x7f]/
+function fold(s) {
+  return NON_ASCII.test(s) ? s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() : s.toLowerCase()
+}
+
+// Text that identifies a value in a column's value list and in searches.
+function keyOf(v, d) {
+  if (v === undefined) return OUT_KEY
+  if (v === null) return EMPTY_KEY
+  if (d.kind === 'leaf') {
+    const s = scalarText(v, d)
+    if (s !== null) return s
+  }
+  return serialize(v, d, { limit: 2000 }).text
+}
+
+function keyLabel(k) {
+  if (k === EMPTY_KEY) return '(Vazias)'
+  if (k === OUT_KEY) return '(fora da lista)'
+  return k.length > 200 ? k.slice(0, 200) + '…' : k
+}
+
+function sortFamily(d) {
+  if (d.kind !== 'leaf') return 'text'
+  switch (d.cat) {
+    case 'int': case 'float': case 'date': case 'bool': return 'num'
+    case 'bigint': case 'decimal': case 'timestamp': case 'time': return 'big'
+    default: return 'text'
+  }
+}
+
+// One comparable key per value (number, BigInt or folded text); null when empty.
+function sortKeyOf(v, d, fam = sortFamily(d)) {
+  if (v === null || v === undefined) return null
+  if (fam === 'num') {
+    if (typeof v === 'number') return Number.isNaN(v) ? Infinity : v
+    if (typeof v === 'boolean') return v ? 1 : 0
+    if (v instanceof PDate) return v.days
+    return null
+  }
+  if (fam === 'big') {
+    if (typeof v === 'bigint') return v
+    if (v instanceof PDec) return BigInt(v.text.replace('.', ''))
+    if (v instanceof PTime || v instanceof PTimeOfDay) return v.ns
+    if (typeof v === 'number' && Number.isFinite(v)) return BigInt(Math.trunc(v))
+    return null
+  }
+  return fold(keyOf(v, d))
+}
+
+// Orders row indices by one column. Empty values go last in both directions; ties keep the current order.
+function sortIndices(indices, values, d, dir) {
+  const fam = sortFamily(d)
+  const n = indices.length
+  const keys = new Array(n)
+  for (let i = 0; i < n; i++) keys[i] = sortKeyOf(values[indices[i]], d, fam)
+  const order = new Uint32Array(n)
+  for (let i = 0; i < n; i++) order[i] = i
+  order.sort((a, b) => {
+    const ka = keys[a]
+    const kb = keys[b]
+    if (ka === null || kb === null) return ka === kb ? a - b : ka === null ? 1 : -1
+    const c = ka < kb ? -1 : ka > kb ? 1 : 0
+    return c ? c * dir : a - b
+  })
+  const out = new Uint32Array(n)
+  for (let i = 0; i < n; i++) out[i] = indices[order[i]]
+  return out
+}
+
+// Distinct values with counts, in the column's own order; empty values last.
+function distinctValues(indices, keys, values, d) {
+  const counts = new Map()
+  const first = new Map()
+  for (const i of indices) {
+    const k = keys[i]
+    const c = counts.get(k)
+    if (c === undefined) { counts.set(k, 1); first.set(k, i) } else counts.set(k, c + 1)
+  }
+  const fam = sortFamily(d)
+  const entries = [...counts.keys()].map(k => ({ key: k, count: counts.get(k), sk: sortKeyOf(values[first.get(k)], d, fam) }))
+  entries.sort((a, b) => {
+    if (a.sk === null || b.sk === null) {
+      if (a.sk === b.sk) return a.key < b.key ? -1 : 1
+      return a.sk === null ? 1 : -1
+    }
+    if (a.sk < b.sk) return -1
+    if (a.sk > b.sk) return 1
+    return a.key < b.key ? -1 : a.key > b.key ? 1 : 0
+  })
+  return entries
+}
+
+// ---- conditions typed by the user ----
+const OPS = {
+  num: [['eq', 'é igual a'], ['ne', 'é diferente de'], ['gt', 'é maior que'], ['ge', 'é maior ou igual a'], ['lt', 'é menor que'], ['le', 'é menor ou igual a'], ['between', 'está entre']],
+  time: [['eq', 'é igual a'], ['ne', 'é diferente de'], ['gt', 'é depois de'], ['ge', 'é igual ou depois de'], ['lt', 'é antes de'], ['le', 'é igual ou antes de'], ['between', 'está entre']],
+  text: [['contains', 'contém'], ['ncontains', 'não contém'], ['starts', 'começa com'], ['ends', 'termina com'], ['eq', 'é igual a'], ['ne', 'é diferente de']],
+}
+
+function condFamily(d) {
+  if (d.kind !== 'leaf') return 'text'
+  switch (d.cat) {
+    case 'int': case 'bigint': case 'float': case 'decimal': return 'num'
+    case 'date': case 'timestamp': case 'time': return 'time'
+    case 'bool': case 'null': return null
+    default: return 'text'
+  }
+}
+
+// Accepts 1234.5, 1234,5 and 1.234,5.
+function parseNumber(s) {
+  let t = String(s).trim().replace(/\s/g, '')
+  if (!t) return null
+  if (t.includes(',')) t = t.replace(/\./g, '').replace(',', '.')
+  if (!/^[-+]?(\d+\.?\d*|\.\d+)(e[-+]?\d+)?$/i.test(t)) return null
+  return { num: Number(t), big: /^[-+]?\d+$/.test(t) ? BigInt(t) : null }
+}
+
+function daysFromCivil(y, m, d) {
+  y -= m <= 2 ? 1 : 0
+  const era = Math.floor(y / 400)
+  const yoe = y - era * 400
+  const doy = Math.floor((153 * (m + (m > 2 ? -3 : 9)) + 2) / 5) + d - 1
+  const doe = yoe * 365 + Math.floor(yoe / 4) - Math.floor(yoe / 100) + doy
+  return era * 146097 + doe - 719468
+}
+
+const NS = { day: 86400000000000n, hour: 3600000000000n, minute: 60000000000n, second: 1000000000n }
+
+// Clock "10", "10:30", "10:30:15" or "10:30:15.250" as [start, end) in ns of the day.
+function parseClock(h, mi, sec, frac) {
+  if (h === undefined) return null
+  const H = Number(h)
+  const M = Number(mi ?? 0)
+  const S = Number(sec ?? 0)
+  if (H > 23 || M > 59 || S > 59) return null
+  let lo = BigInt(H) * NS.hour + BigInt(M) * NS.minute + BigInt(S) * NS.second
+  let step = mi === undefined ? NS.hour : sec === undefined ? NS.minute : NS.second
+  if (frac !== undefined) {
+    lo += BigInt(frac.padEnd(9, '0'))
+    step = 10n ** BigInt(9 - frac.length)
+  }
+  return [lo, lo + step]
+}
+
+// Date, date-time or time typed in ISO (2026-08-01 10:30) or Brazilian (01/08/2026 10:30) form,
+// as a [start, end) range in the column's key space.
+function parseMoment(s, d) {
+  const t = String(s).trim()
+  if (d.cat === 'time') {
+    const m = /^(\d{1,2})(?::(\d{2})(?::(\d{2})(?:[.,](\d{1,9}))?)?)?$/.exec(t)
+    return m ? parseClock(m[1], m[2], m[3], m[4]) : null
+  }
+  const clock = '(?:[ T](\\d{1,2})(?::(\\d{2})(?::(\\d{2})(?:[.,](\\d{1,9}))?)?)?Z?)?'
+  let y, mo, day, rest
+  let m = new RegExp(`^(-?\\d{4})-(\\d{1,2})-(\\d{1,2})${clock}$`).exec(t)
+  if (m) [y, mo, day, ...rest] = m.slice(1)
+  else {
+    m = new RegExp(`^(\\d{1,2})/(\\d{1,2})/(\\d{4})${clock}$`).exec(t)
+    if (!m) return null
+    ;[day, mo, y, ...rest] = m.slice(1)
+  }
+  const Y = Number(y)
+  const MO = Number(mo)
+  const D = Number(day)
+  if (MO < 1 || MO > 12 || D < 1 || D > 31) return null
+  const days = daysFromCivil(Y, MO, D)
+  if (formatDate(days) !== `${String(Y).padStart(4, '0')}-${String(MO).padStart(2, '0')}-${String(D).padStart(2, '0')}`) return null
+  if (d.cat === 'date') return [days, days + 1]
+  const base = BigInt(days) * NS.day
+  if (rest[0] === undefined) return [base, base + NS.day]
+  const c = parseClock(...rest)
+  return c ? [base + c[0], base + c[1]] : null
+}
+
+const numOf = v => (typeof v === 'number' ? v : typeof v === 'bigint' ? Number(v) : v instanceof PDec ? Number(v.text) : NaN)
+
+// Builds a test for one condition, or { error } explaining what to type.
+function makeCondition(cond, d) {
+  const fam = condFamily(d)
+  const { op } = cond
+  const negative = op === 'ne' || op === 'ncontains'
+  if (fam === 'text') {
+    const q = fold(String(cond.a ?? ''))
+    if (!q && op !== 'eq' && op !== 'ne') return { error: 'Digite o texto da condição.' }
+    const test = k => {
+      switch (op) {
+        case 'contains': return k.includes(q)
+        case 'ncontains': return !k.includes(q)
+        case 'starts': return k.startsWith(q)
+        case 'ends': return k.endsWith(q)
+        case 'eq': return k === q
+        default: return k !== q
+      }
+    }
+    return { test: v => (v === null || v === undefined ? negative : test(fold(keyOf(v, d)))) }
+  }
+  if (fam === 'num') {
+    const a = parseNumber(cond.a ?? '')
+    const b = op === 'between' ? parseNumber(cond.b ?? '') : null
+    if (!a || (op === 'between' && !b)) return { error: 'Digite um número, como 1234,5 ou 1234.5.' }
+    const [lo, hi] = op === 'between' && b.num < a.num ? [b, a] : [a, b]
+    const exact = d.cat === 'bigint' && lo.big !== null && (op !== 'between' || hi.big !== null)
+    const test = v => {
+      const x = exact && typeof v === 'bigint' ? v : numOf(v)
+      const L = exact && typeof v === 'bigint' ? lo.big : lo.num
+      if (typeof x === 'number' && Number.isNaN(x)) return false
+      switch (op) {
+        case 'eq': return x === L
+        case 'ne': return x !== L
+        case 'gt': return x > L
+        case 'ge': return x >= L
+        case 'lt': return x < L
+        case 'le': return x <= L
+        default: return x >= L && x <= (exact && typeof v === 'bigint' ? hi.big : hi.num)
+      }
+    }
+    return { test: v => (v === null || v === undefined ? negative : test(v)) }
+  }
+  if (fam === 'time') {
+    const ra = parseMoment(cond.a ?? '', d)
+    const rb = op === 'between' ? parseMoment(cond.b ?? '', d) : null
+    const hint = d.cat === 'time' ? 'Digite um horário, como 14:30 ou 14:30:15.' : d.cat === 'date'
+      ? 'Digite uma data, como 2026-08-01 ou 01/08/2026.' : 'Digite uma data, com ou sem hora, como 01/08/2026 ou 2026-08-01 14:30.'
+    if (!ra || (op === 'between' && !rb)) return { error: hint }
+    const fam2 = sortFamily(d)
+    const [r1, r2] = op === 'between' && rb[0] < ra[0] ? [rb, ra] : [ra, rb]
+    const test = k => {
+      switch (op) {
+        case 'eq': return k >= r1[0] && k < r1[1]
+        case 'ne': return !(k >= r1[0] && k < r1[1])
+        case 'gt': return k >= r1[1]
+        case 'ge': return k >= r1[0]
+        case 'lt': return k < r1[0]
+        case 'le': return k < r1[1]
+        default: return k >= r1[0] && k < r2[1]
+      }
+    }
+    return { test: v => { const k = sortKeyOf(v, d, fam2); return k === null ? negative : test(k) } }
+  }
+  return { error: 'Use a lista de valores para esta coluna.' }
 }
 
 
@@ -1631,7 +1967,9 @@ const state = {
   downloads: null, downloadsReady: null, downloadsChecked: false, downloadsWhy: '',
   exportMode: 'options', cancelExport: false, copyText: null, clip: null, drag: null,
   muni: '', muniAuto: true, view: [],
+  table: null, tableToken: 0, tableChain: null, query: null, queryToken: 0, result: null, rowNums: null, menu: null,
 }
+state.query = newQuery()
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 
 // ---- boot ----
@@ -1735,6 +2073,15 @@ async function openSource(src, sample = false) {
   state.visible = ctx.columns.slice(0, MAX_DEFAULT_COLUMNS).map(c => c.name)
   state.muni = ''
   state.muniAuto = true
+  state.table = null
+  state.tableToken++
+  state.queryToken++
+  state.query = newQuery()
+  state.result = null
+  state.rowNums = null
+  $('q').value = ''
+  closeMenu()
+  renderQueryBar()
   state.rows = []
   $('grid').innerHTML = ''
   $('grid-empty').hidden = true
@@ -1798,8 +2145,8 @@ function renderRgMap() {
   const { ctx } = state
   const bar = $('rgbar')
   bar.querySelectorAll('.rgseg').forEach(n => n.remove())
-  $('rg-label').textContent = plural(ctx.rowGroups.length, 'row group', 'row groups')
-  const dense = ctx.rowGroups.length > MAX_RG_SEGMENTS || !ctx.numRows
+  $('rg-label').textContent = state.result ? plural(state.result.length, 'linha no resultado', 'linhas no resultado') : plural(ctx.rowGroups.length, 'row group', 'row groups')
+  const dense = !!state.result || ctx.rowGroups.length > MAX_RG_SEGMENTS || !ctx.numRows
   bar.classList.toggle('dense', dense)
   if (!dense) {
     const frag = document.createDocumentFragment()
@@ -1832,15 +2179,16 @@ function groupOf(row) {
 function positionMarker(preview) {
   const { ctx } = state
   const mark = $('rgmark')
-  if (!ctx || !ctx.numRows) { mark.hidden = true; $('rg-where').textContent = ''; return }
+  const total = listLength()
+  if (!ctx || !total) { mark.hidden = true; $('rg-where').textContent = ''; return }
   if (state.drag && !preview) return
   const start = preview ? preview[0] : state.page * state.pageSize
-  const end = preview ? preview[1] : Math.min(ctx.numRows, start + state.pageSize)
+  const end = preview ? preview[1] : Math.min(total, start + state.pageSize)
   const bar = $('rgbar')
   const segs = bar.querySelectorAll('.rgseg')
   const width = bar.clientWidth
   const at = row => {
-    if (!segs.length) return (row / ctx.numRows) * width
+    if (!segs.length) return (row / total) * width
     const g = Math.min(groupOf(Math.min(row, ctx.numRows - 1)), segs.length - 1)
     const grp = ctx.rowGroups[g]
     const seg = segs[g]
@@ -1848,10 +2196,14 @@ function positionMarker(preview) {
     return seg.offsetLeft + frac * seg.offsetWidth
   }
   const left = at(start)
-  const right = end >= ctx.numRows && segs.length ? segs[segs.length - 1].offsetLeft + segs[segs.length - 1].offsetWidth : at(end)
+  const right = end >= total && segs.length ? segs[segs.length - 1].offsetLeft + segs[segs.length - 1].offsetWidth : at(end)
   mark.hidden = false
   mark.style.left = `${Math.max(0, left - 2)}px`
   mark.style.width = `${Math.max(6, right - left + 4)}px`
+  if (state.result) {
+    $('rg-where').textContent = `${preview ? 'Ir para' : 'Página atual:'} posições ${fmt(start + 1)}–${fmt(end)}`
+    return
+  }
   const g1 = groupOf(start)
   const g2 = groupOf(Math.max(start, end - 1))
   const groups = g1 === g2 ? `row group ${fmt(g1 + 1)}` : `row groups ${fmt(g1 + 1)}–${fmt(g2 + 1)}`
@@ -1863,9 +2215,10 @@ function rowAtX(clientX) {
   const { ctx } = state
   const bar = $('rgbar')
   const x = clientX - bar.getBoundingClientRect().left
-  const segs = bar.querySelectorAll('.rgseg')
-  const last = ctx.numRows - 1
-  if (!segs.length) return Math.min(last, Math.max(0, Math.floor(x / bar.clientWidth * ctx.numRows)))
+  const segs = state.result ? [] : bar.querySelectorAll('.rgseg')
+  const total = listLength()
+  const last = total - 1
+  if (!segs.length) return Math.min(last, Math.max(0, Math.floor(x / bar.clientWidth * total)))
   for (let g = 0; g < segs.length; g++) {
     const seg = segs[g]
     if (x < seg.offsetLeft + seg.offsetWidth + 1 || g === segs.length - 1) {
@@ -1883,7 +2236,7 @@ function scrubTo(clientX) {
   const page = Math.floor(row / state.pageSize)
   state.drag.row = row
   const start = page * state.pageSize
-  positionMarker([start, Math.min(state.ctx.numRows, start + state.pageSize)])
+  positionMarker([start, Math.min(listLength(), start + state.pageSize)])
   clearTimeout(scrubTimer)
   if (page !== state.page) scrubTimer = setTimeout(() => { if (state.drag && page !== state.page) goToPage(page) }, 150)
 }
@@ -1900,9 +2253,8 @@ function endDrag() {
 }
 
 function onSliderKey(e) {
-  const { ctx } = state
-  if (!ctx || !ctx.numRows) return
-  const pages = Math.ceil(ctx.numRows / state.pageSize)
+  if (!state.ctx || !listLength()) return
+  const pages = Math.ceil(listLength() / state.pageSize)
   const step = Math.max(1, Math.round(pages / 10))
   let p = state.page
   switch (e.key) {
@@ -1953,12 +2305,22 @@ function updateColsCount() {
 let reloadTimer = 0
 function columnsChanged() {
   const boxes = $('col-list').querySelectorAll('input[type="checkbox"]')
+  const prev = state.visible
   state.visible = [...boxes].filter(b => b.checked).map(b => b.dataset.name)
   state.capped = false
   state.active = null
   updateColsCount()
   clearTimeout(reloadTimer)
-  reloadTimer = setTimeout(loadPage, 300)
+  reloadTimer = setTimeout(async () => {
+    if (!queryActive()) return loadPage()
+    if (await applyQuery()) return
+    const message = $('qbar-text').textContent
+    state.visible = prev
+    for (const b of boxes) b.checked = prev.includes(b.dataset.name)
+    updateColsCount()
+    await applyQuery()
+    renderQueryBar(message, 'error')
+  }, 300)
 }
 
 function togglePicker(show) {
@@ -2022,6 +2384,20 @@ function setMuni(name) {
   state.muniAuto = false
   state.muni = name
   state.active = null
+  dropMuniCaches()
+  if (state.query.filters.has(MUNI_COL) || state.query.sort?.name === MUNI_COL || queryActive()) {
+    state.query.filters.delete(MUNI_COL)
+    if (state.query.sort?.name === MUNI_COL) state.query.sort = null
+    if (name && !state.visible.includes(name)) {
+      const order = state.ctx.columns.map(c => c.name)
+      state.visible = order.filter(n => n === name || state.visible.includes(n))
+      const box = $('col-list').querySelector(`input[data-name="${CSS.escape(name)}"]`)
+      if (box) box.checked = true
+      updateColsCount()
+    }
+    applyQuery()
+    return
+  }
   if (name && !state.visible.includes(name)) {
     const order = state.ctx.columns.map(c => c.name)
     state.visible = order.filter(n => n === name || state.visible.includes(n))
@@ -2046,10 +2422,373 @@ function muniDerived(names) {
   return j < 0 ? [] : [{ after: j, header: `${state.muni} (município)`, value: muniName }]
 }
 
+// ---- search, filter and sort ----
+const MUNI_COL = String.fromCharCode(2) + 'municipio'
+const FUNNEL = '<svg width="11" height="11" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 1.5h10L7.2 6.4V10L4.8 11.2V6.4Z" fill="currentColor"/></svg>'
+function newQuery() { return { search: '', filters: new Map(), sort: null } }
+const cloneQuery = q => ({ search: q.search, filters: new Map(q.filters), sort: q.sort && { ...q.sort } })
+const queryActive = () => !!(state.query.search.trim() || state.query.filters.size || state.query.sort)
+const listLength = () => (state.result ? state.result.length : state.ctx ? state.ctx.numRows : 0)
+const colLabel = name => (name === MUNI_COL ? 'município' : name)
+const colDesc = name => (name === MUNI_COL ? TEXT_LEAF : state.ctx.byName.get(name).desc)
+
+function colValues(name) {
+  const t = state.table
+  if (name !== MUNI_COL) return t.cols.get(name)
+  let v = t.cols.get(MUNI_COL)
+  if (!v) {
+    const src = t.cols.get(state.muni)
+    v = new Array(src.length)
+    for (let i = 0; i < src.length; i++) v[i] = muniName(src[i])
+    t.cols.set(MUNI_COL, v)
+  }
+  return v
+}
+function colKeys(name) {
+  const t = state.table
+  let k = t.keys.get(name)
+  if (!k) {
+    const vals = colValues(name)
+    const d = colDesc(name)
+    k = new Array(vals.length)
+    for (let i = 0; i < vals.length; i++) k[i] = keyOf(vals[i], d)
+    t.keys.set(name, k)
+  }
+  return k
+}
+function colFolded(name) {
+  const t = state.table
+  let f = t.folded.get(name)
+  if (!f) {
+    const keys = colKeys(name)
+    f = new Array(keys.length)
+    for (let i = 0; i < keys.length; i++) {
+      const k = keys[i]
+      f[i] = k === EMPTY_KEY || k === OUT_KEY ? '' : fold(k)
+    }
+    t.folded.set(name, f)
+  }
+  return f
+}
+function dropMuniCaches() {
+  const t = state.table
+  if (t) { t.cols.delete(MUNI_COL); t.keys.delete(MUNI_COL); t.folded.delete(MUNI_COL) }
+}
+
+// Loads whole columns into memory (once each), in the order the requests arrive.
+function ensureTable(names, report) {
+  const run = () => ensureTableNow(names, report)
+  state.tableChain = (state.tableChain ?? Promise.resolve()).then(run, run)
+  return state.tableChain
+}
+async function ensureTableNow(names, report) {
+  const { ctx } = state
+  if (!state.table) state.table = { cols: new Map(), keys: new Map(), folded: new Map() }
+  const t = state.table
+  const need = [...new Set(names.flatMap(n => (n === MUNI_COL ? (state.muni ? [state.muni] : []) : [n])))]
+  const missing = need.filter(n => !t.cols.has(n))
+  if (!missing.length) return { ok: true }
+  const loaded = [...t.cols.keys()].filter(n => n !== MUNI_COL).length
+  const cells = ctx.numRows * (loaded + missing.length)
+  if (cells > MAX_TABLE_CELLS) {
+    return {
+      ok: false,
+      error: `Para buscar, filtrar ou ordenar, a página carrega as colunas usadas do arquivo inteiro na memória: seriam ${fmt(ctx.numRows)} linhas × ${fmt(loaded + missing.length)} colunas, acima do limite de ${fmt(MAX_TABLE_CELLS)} células. Oculte colunas em Colunas e tente de novo.`,
+    }
+  }
+  const token = state.tableToken
+  const arrays = missing.map(() => new Array(ctx.numRows))
+  const cache = groupCache(ctx.file)
+  let done = 0
+  try {
+    for (const [a, b, g] of exportChunks(ctx, 0, ctx.numRows)) {
+      cache.setGroup(g)
+      const rows = await readRows(ctx, a, b, missing, cache.buffer)
+      if (token !== state.tableToken) return { ok: false, stale: true }
+      for (let i = 0; i < rows.length; i++) {
+        const r = rows[i]
+        for (let j = 0; j < missing.length; j++) arrays[j][a + i] = r[j]
+      }
+      done += rows.length
+      report?.(`Carregando ${plural(ctx.numRows, 'linha', 'linhas')} para buscar, filtrar e ordenar… ${Math.floor(done / ctx.numRows * 100)}%`)
+      await sleep(0)
+    }
+  } catch (e) {
+    return { ok: false, error: `Não foi possível ler o arquivo: ${e?.message || e}` }
+  }
+  if (token !== state.tableToken) return { ok: false, stale: true }
+  missing.forEach((n, j) => t.cols.set(n, arrays[j]))
+  return { ok: true }
+}
+
+function searchColumns() {
+  const cols = state.visible.slice()
+  if (state.muni && state.visible.includes(state.muni)) cols.push(MUNI_COL)
+  return cols
+}
+
+function filterTest(name, f) {
+  const keys = f.only || f.except ? colKeys(name) : null
+  const values = colValues(name)
+  const cond = f.cond ? makeCondition(f.cond, colDesc(name)) : null
+  return i => {
+    if (f.only && !f.only.has(keys[i])) return false
+    if (f.except && f.except.has(keys[i])) return false
+    if (cond && cond.test && !cond.test(values[i])) return false
+    return true
+  }
+}
+
+// Rows that pass the search and every filter except the one on `exceptName`.
+function passingIndices(exceptName) {
+  const n = state.ctx.numRows
+  const tests = []
+  for (const [name, f] of state.query.filters) if (name !== exceptName) tests.push(filterTest(name, f))
+  const q = fold(state.query.search.trim())
+  const folded = q ? searchColumns().map(colFolded) : []
+  const out = new Uint32Array(n)
+  let m = 0
+  outer: for (let i = 0; i < n; i++) {
+    for (const t of tests) if (!t(i)) continue outer
+    if (q) {
+      let hit = false
+      for (const f of folded) if (f[i].includes(q)) { hit = true; break }
+      if (!hit) continue
+    }
+    out[m++] = i
+  }
+  return out.slice(0, m)
+}
+
+function setQueryStatus(text) { renderQueryBar(text, 'busy') }
+
+function sortWords(name, dir) {
+  const fam = condFamily(colDesc(name))
+  if (fam === 'num') return dir > 0 ? 'do menor para o maior' : 'do maior para o menor'
+  if (fam === 'time') return dir > 0 ? 'do mais antigo para o mais recente' : 'do mais recente para o mais antigo'
+  if (fam === null) return dir > 0 ? 'falso primeiro' : 'verdadeiro primeiro'
+  return dir > 0 ? 'de A a Z' : 'de Z a A'
+}
+
+function renderQueryBar(message, kind) {
+  const bar = $('qbar')
+  bar.classList.toggle('error', kind === 'error')
+  if (message) {
+    $('qbar-text').textContent = message
+    $('qbar-clear').hidden = !queryActive()
+    bar.hidden = false
+    return
+  }
+  if (!state.ctx || !state.result) { bar.hidden = true; return }
+  const parts = [`Mostrando ${fmt(state.result.length)} de ${plural(state.ctx.numRows, 'linha', 'linhas')}`]
+  const q = state.query.search.trim()
+  if (q) parts.push(`busca “${q}”`)
+  if (state.query.filters.size) parts.push(`filtro em ${[...state.query.filters.keys()].map(colLabel).join(', ')}`)
+  if (state.query.sort) parts.push(`ordem por ${colLabel(state.query.sort.name)}, ${sortWords(state.query.sort.name, state.query.sort.dir)}`)
+  $('qbar-text').textContent = parts.join(' · ')
+  $('qbar-clear').hidden = false
+  bar.hidden = false
+}
+
+// Recomputes the result list. Returns false when the columns could not be loaded.
+async function applyQuery() {
+  const token = ++state.queryToken
+  if (!queryActive()) {
+    state.result = null
+    state.page = 0
+    state.active = null
+    renderQueryBar()
+    renderRgMap()
+    await loadPage()
+    return true
+  }
+  const q = state.query
+  const names = [...new Set([...state.visible, ...q.filters.keys(), ...(q.sort ? [q.sort.name] : []), ...(q.search.trim() ? searchColumns() : [])])]
+  const wrap = $('grid-wrap')
+  wrap.classList.add('busy')
+  $('loadbar').hidden = false
+  setQueryStatus('Preparando…')
+  try {
+    const res = await ensureTable(names, setQueryStatus)
+    if (token !== state.queryToken) return true
+    if (!res.ok) {
+      if (!res.stale) renderQueryBar(res.error, 'error')
+      return false
+    }
+    setQueryStatus('Aplicando…')
+    await sleep(0)
+    let result = passingIndices(null)
+    if (q.sort) result = sortIndices(result, colValues(q.sort.name), colDesc(q.sort.name), q.sort.dir)
+    if (token !== state.queryToken) return true
+    state.result = result
+  } finally {
+    if (token === state.queryToken) { wrap.classList.remove('busy'); $('loadbar').hidden = true }
+  }
+  state.page = 0
+  state.active = null
+  wrap.scrollTop = 0
+  renderQueryBar()
+  renderRgMap()
+  await loadPage()
+  return true
+}
+
+// Changes the query; puts it back if the change cannot be applied.
+async function commitQuery(mutate) {
+  const prev = cloneQuery(state.query)
+  mutate(state.query)
+  const ok = await applyQuery()
+  if (!ok) {
+    const message = $('qbar-text').textContent
+    state.query = prev
+    $('q').value = prev.search
+    if (state.rows.length) renderGrid()
+    renderQueryBar(message, 'error')
+  }
+  return ok
+}
+
+// ---- column menu (sort, condition, value list) ----
+function closeMenu() {
+  const m = state.menu
+  state.menu = null
+  $('hmenu').hidden = true
+  if (m?.anchor?.isConnected) m.anchor.focus({ preventScroll: true })
+}
+
+function placeMenu(anchor) {
+  const menu = $('hmenu')
+  const r = anchor.getBoundingClientRect()
+  const w = menu.offsetWidth
+  menu.style.left = `${Math.max(8, Math.min(r.right - w, innerWidth - w - 8))}px`
+  const top = r.bottom + 4
+  menu.style.top = `${top}px`
+  menu.style.maxHeight = `${Math.max(240, innerHeight - top - 8)}px`
+}
+
+async function openMenu(name, anchor) {
+  const d = colDesc(name)
+  const fam = condFamily(d)
+  const f = state.query.filters.get(name)
+  const m = state.menu = { name, d, anchor, entries: [], excluded: new Set(), ready: false }
+  const label = colLabel(name)
+  $('hm-asc').textContent = `↑ Ordenar ${sortWords(name, 1)}`
+  $('hm-desc').textContent = `↓ Ordenar ${sortWords(name, -1)}`
+  $('hm-unsort').hidden = state.query.sort?.name !== name
+  $('hm-clear').textContent = `Limpar o filtro de “${label}”`
+  $('hm-clear').disabled = !f
+  $('hm-cond').hidden = !fam
+  if (fam) {
+    $('hm-op').innerHTML = '<option value="">qualquer valor</option>' + OPS[fam].map(([v, t]) => `<option value="${v}">${t}</option>`).join('')
+    $('hm-op').value = f?.cond?.op ?? ''
+    $('hm-a').value = f?.cond?.a ?? ''
+    $('hm-b').value = f?.cond?.b ?? ''
+    const ph = fam === 'num' ? '1234,5' : fam === 'time' ? (d.cat === 'time' ? '14:30' : '01/08/2026') : 'texto'
+    $('hm-a').placeholder = ph
+    $('hm-b').placeholder = ph
+    syncCondArgs()
+  }
+  $('hm-search').value = ''
+  $('hm-error').hidden = true
+  $('hm-list').innerHTML = ''
+  $('hm-all').checked = true
+  $('hm-note').textContent = 'Carregando os valores da coluna…'
+  $('hmenu').setAttribute('aria-label', `Ordenar e filtrar ${label}`)
+  $('hmenu').hidden = false
+  placeMenu(anchor)
+  $('hm-asc').focus()
+  const res = await ensureTable([name], t => { if (state.menu === m) $('hm-note').textContent = t })
+  if (state.menu !== m) return
+  if (!res.ok) {
+    $('hm-note').textContent = ''
+    $('hm-error').textContent = res.error || 'Não foi possível carregar os valores.'
+    $('hm-error').hidden = !!res.stale
+    return
+  }
+  const values = colValues(name)
+  m.entries = distinctValues(passingIndices(name), colKeys(name), values, d)
+  if (f?.except) for (const e of m.entries) if (f.except.has(e.key)) m.excluded.add(e.key)
+  if (f?.only) for (const e of m.entries) if (!f.only.has(e.key)) m.excluded.add(e.key)
+  m.ready = true
+  renderMenuList()
+}
+
+function syncCondArgs() {
+  const op = $('hm-op').value
+  $('hm-args').hidden = !op
+  $('hm-and').hidden = $('hm-b').hidden = op !== 'between'
+}
+
+function renderMenuList() {
+  const m = state.menu
+  if (!m?.ready) return
+  const q = fold($('hm-search').value.trim())
+  const shown = []
+  let matches = 0
+  for (let i = 0; i < m.entries.length; i++) {
+    if (q && !fold(keyLabel(m.entries[i].key)).includes(q)) continue
+    matches++
+    if (shown.length < 1000) shown.push(i)
+  }
+  m.shown = shown
+  $('hm-list').innerHTML = shown.map(i => {
+    const e = m.entries[i]
+    const special = e.key === EMPTY_KEY || e.key === OUT_KEY
+    return `<li><label><input type="checkbox" data-i="${i}"${m.excluded.has(e.key) ? '' : ' checked'}>` +
+      `<span class="v${special ? ' dim' : ''}" title="${esc(keyLabel(e.key))}">${esc(keyLabel(e.key))}</span><span class="cnt">${fmt(e.count)}</span></label></li>`
+  }).join('')
+  $('hm-all').checked = shown.every(i => !m.excluded.has(m.entries[i].key))
+  $('hm-note').textContent = !m.entries.length ? 'Nenhum valor nas linhas que passam pelos outros filtros.'
+    : matches > shown.length ? `Mostrando ${fmt(shown.length)} de ${fmt(matches)} valores. Use a busca para achar outros.`
+      : q && !matches ? 'Nenhum valor encontrado.' : ''
+}
+
+function applyMenu() {
+  const m = state.menu
+  if (!m) return
+  const f = {}
+  const q = fold($('hm-search').value.trim())
+  if (m.ready) {
+    if (q) {
+      const only = new Set()
+      for (const e of m.entries) if (fold(keyLabel(e.key)).includes(q) && !m.excluded.has(e.key)) only.add(e.key)
+      f.only = only
+    } else if (m.excluded.size) f.except = new Set(m.excluded)
+  } else {
+    const prev = state.query.filters.get(m.name)
+    if (prev?.only) f.only = prev.only
+    if (prev?.except) f.except = prev.except
+  }
+  const op = condFamily(m.d) ? $('hm-op').value : ''
+  if (op) {
+    const cond = { op, a: $('hm-a').value, b: $('hm-b').value }
+    const check = makeCondition(cond, m.d)
+    if (check.error) {
+      $('hm-error').textContent = check.error
+      $('hm-error').hidden = false
+      $('hm-a').focus()
+      return
+    }
+    f.cond = cond
+  }
+  const name = m.name
+  closeMenu()
+  commitQuery(qy => { if (f.only || f.except || f.cond) qy.filters.set(name, f); else qy.filters.delete(name) })
+}
+
+function menuSort(dir) {
+  const name = state.menu?.name
+  if (!name) return
+  closeMenu()
+  commitQuery(q => { q.sort = dir ? { name, dir } : null })
+}
+
 // ---- data page ----
 async function loadPage() {
   const { ctx } = state
   if (!ctx) return
+  if (state.result) return loadQueryPage()
+  state.rowNums = null
   const total = ctx.numRows
   const pages = Math.max(1, Math.ceil(total / state.pageSize))
   state.page = Math.min(Math.max(0, state.page), pages - 1)
@@ -2093,13 +2832,46 @@ async function loadPage() {
   }
 }
 
+// A page of the filtered or sorted list, straight from memory.
+async function loadQueryPage() {
+  const total = state.result.length
+  const pages = Math.max(1, Math.ceil(total / state.pageSize))
+  state.page = Math.min(Math.max(0, state.page), pages - 1)
+  const start = state.page * state.pageSize
+  const end = Math.min(total, start + state.pageSize)
+  renderPager()
+  positionMarker()
+  $('data-error').hidden = true
+  if (!state.visible.length) {
+    state.rows = []
+    $('grid').innerHTML = ''
+    $('grid-empty').hidden = false
+    $('grid-empty').textContent = 'Nenhuma coluna selecionada. Escolha ao menos uma em Colunas.'
+    return
+  }
+  if (state.visible.some(n => !state.table?.cols.has(n))) {
+    const res = await ensureTable(state.visible, setQueryStatus)
+    if (!res.ok) { if (!res.stale) renderQueryBar(res.error, 'error'); return }
+    renderQueryBar()
+  }
+  const cols = state.visible.map(n => state.table.cols.get(n))
+  const idxs = state.result.subarray(start, end)
+  state.rows = Array.from(idxs, i => cols.map(c => c[i]))
+  state.rowNums = Array.from(idxs, i => i + 1)
+  state.rowStart = start
+  $('grid-empty').hidden = total > 0
+  $('grid-empty').textContent = 'Nenhuma linha corresponde à busca e aos filtros.'
+  renderGrid()
+}
+
 function renderPager() {
-  const { ctx } = state
-  const total = ctx.numRows
+  const total = listLength()
   const pages = Math.max(1, Math.ceil(total / state.pageSize))
   const start = state.page * state.pageSize
   const end = Math.min(total, start + state.pageSize)
-  $('pg-range').innerHTML = total ? `Linhas <strong>${fmt(start + 1)}–${fmt(end)}</strong> de ${fmt(total)}` : 'Sem linhas'
+  $('pg-range').innerHTML = total ? `Linhas <strong>${fmt(start + 1)}–${fmt(end)}</strong> de ${fmt(total)}${state.result ? ' no resultado' : ''}` : state.result ? 'Nenhuma linha no resultado' : 'Sem linhas'
+  for (const el of $('goto-form').elements) el.disabled = !!state.result
+  $('goto-form').title = state.result ? 'Indisponível com busca, filtro ou ordem ativos' : ''
   $('pg-first').disabled = $('pg-prev').disabled = state.page <= 0
   $('pg-next').disabled = $('pg-last').disabled = state.page >= pages - 1
   $('goto-row').max = String(Math.max(1, total))
@@ -2117,14 +2889,22 @@ function renderGrid() {
   const view = viewColumns()
   state.view = view
   let h = '<thead><tr><th class="rn" scope="col">#</th>'
+  const q = state.query
+  const hbtn = qname => {
+    const filtered = q.filters.has(qname)
+    const dir = q.sort?.name === qname ? q.sort.dir : 0
+    const icon = (filtered ? FUNNEL : '') + (dir ? (dir > 0 ? '↑' : '↓') : '') || '▾'
+    return `<button type="button" class="hbtn${filtered || dir ? ' on' : ''}"${qname === MUNI_COL ? ' data-mc="1"' : ` data-q="${esc(qname)}"`} ` +
+      `aria-label="Ordenar e filtrar ${esc(colLabel(qname))}" title="Ordenar e filtrar">${icon}</button>`
+  }
   for (const vc of view) {
     const c = cols[vc.j]
-    if (vc.muni) h += `<th scope="col" class="virt" title="Nome do município para o código em ${esc(c.name)}. Não faz parte do arquivo."><span class="cn">município</span><span class="ct">de ${esc(c.name)}</span></th>`
-    else h += `<th scope="col" class="f-${fams[vc.j]}" title="${esc(c.name)} · ${esc(c.desc.label)}"><span class="cn">${esc(c.name)}</span><span class="ct">${esc(c.desc.label)}</span></th>`
+    if (vc.muni) h += `<th scope="col" class="virt" title="Nome do município para o código em ${esc(c.name)}. Não faz parte do arquivo."><div class="hcell"><div class="hname"><span class="cn">município</span><span class="ct">de ${esc(c.name)}</span></div>${hbtn(MUNI_COL)}</div></th>`
+    else h += `<th scope="col" class="f-${fams[vc.j]}" title="${esc(c.name)} · ${esc(c.desc.label)}"><div class="hcell"><div class="hname"><span class="cn">${esc(c.name)}</span><span class="ct">${esc(c.desc.label)}</span></div>${hbtn(c.name)}</div></th>`
   }
   h += '</tr></thead><tbody>'
   for (let i = 0; i < rows.length; i++) {
-    h += `<tr><th class="rn" scope="row">${fmt(rowStart + i + 1)}</th>`
+    h += `<tr><th class="rn" scope="row">${fmt(state.rowNums ? state.rowNums[i] : rowStart + i + 1)}</th>`
     const row = rows[i]
     for (let k = 0; k < view.length; k++) {
       const vc = view[k]
@@ -2184,7 +2964,7 @@ function setActive(r, c, scroll = true) {
 function onGridKey(e) {
   if (!state.rows.length) return
   const a = state.active ?? { r: 0, c: 0 }
-  const pages = Math.ceil(state.ctx.numRows / state.pageSize)
+  const pages = Math.ceil(listLength() / state.pageSize)
   switch (e.key) {
     case 'ArrowDown': setActive(a.r + 1, a.c); break
     case 'ArrowUp': setActive(a.r - 1, a.c); break
@@ -2254,6 +3034,8 @@ function detailContent(v, d) {
   return { html: `<p class="big">${esc(text)}</p>` + hint(note), copy: text }
 }
 
+const rowNumOf = r => (state.rowNums ? state.rowNums[r] : state.rowStart + r + 1)
+
 function openDetail(r, c) {
   const vc = state.view[c]
   const col = vc && state.ctx.byName.get(state.visible[vc.j])
@@ -2270,11 +3052,11 @@ function openDetail(r, c) {
         : `<p class="big">${esc(name)}</p><p class="hint">Código ${esc(code)} na coluna ${esc(col.name)}</p>`
     copy = name || null
     $('cell-title').textContent = 'município'
-    $('cell-meta').textContent = `tradução de ${col.name} · linha ${fmt(state.rowStart + r + 1)}`
+    $('cell-meta').textContent = `tradução de ${col.name} · linha ${fmt(rowNumOf(r))}`
   } else {
     ({ html, copy } = detailContent(v, col.desc))
     $('cell-title').textContent = col.name
-    $('cell-meta').textContent = `${col.desc.label} · linha ${fmt(state.rowStart + r + 1)}`
+    $('cell-meta').textContent = `${col.desc.label} · linha ${fmt(rowNumOf(r))}`
   }
   $('cell-body').innerHTML = html
   $('cell-status').textContent = ''
@@ -2399,7 +3181,7 @@ function renderChunks(details) {
 // ---- export ----
 function pageRange() {
   const start = state.page * state.pageSize
-  return [start, Math.min(state.ctx.numRows, start + state.pageSize)]
+  return [start, Math.min(listLength(), start + state.pageSize)]
 }
 
 function exportChoice() {
@@ -2409,7 +3191,15 @@ function exportChoice() {
   const colsMode = form.elements['exp-cols'].value
   let start
   let end
-  if (rowsMode === 'page') [start, end] = pageRange()
+  let read = null
+  if (state.result) {
+    ;[start, end] = rowsMode === 'page' ? pageRange() : [0, state.result.length]
+    const result = state.result
+    read = async (a, b) => {
+      const cols = names.map(n => state.table.cols.get(n))
+      return Array.from(result.subarray(a, b), i => cols.map(c => c[i]))
+    }
+  } else if (rowsMode === 'page') [start, end] = pageRange()
   else if (rowsMode === 'all') { start = 0; end = ctx.numRows }
   else {
     const a = Number($('exp-from').value)
@@ -2421,13 +3211,13 @@ function exportChoice() {
     start = a - 1
     end = b
   }
+  const names = colsMode === 'all' ? ctx.columns.map(c => c.name) : state.visible.slice()
   if (end <= start) return { error: 'Não há linhas para exportar.' }
   if (end - start > EXCEL_MAX_DATA_ROWS) return { error: `São ${fmt(end - start)} linhas; o Excel aceita até ${fmt(EXCEL_MAX_DATA_ROWS)}.` }
-  const names = colsMode === 'all' ? ctx.columns.map(c => c.name) : state.visible.slice()
   if (!names.length) return { error: 'Nenhuma coluna escolhida.' }
   if (names.length > EXCEL_MAX_COLUMNS) return { error: `São ${fmt(names.length)} colunas; o Excel aceita até ${fmt(EXCEL_MAX_COLUMNS)}.` }
   const derived = muniDerived(names)
-  return { start, end, names, derived, ncols: names.length + derived.length, whole: start === 0 && end === ctx.numRows }
+  return { start, end, names, derived, read, ncols: names.length + derived.length, whole: !read && start === 0 && end === ctx.numRows, filtered: !!read }
 }
 
 // Tells, inside the dialog, whether this view can save files.
@@ -2496,11 +3286,13 @@ function openExport() {
   const form = $('export-form')
   const [ps, pe] = pageRange()
   $('exp-file').textContent = ctx.name
-  $('exp-page-label').textContent = ctx.numRows ? `Página atual: linhas ${fmt(ps + 1)}–${fmt(pe)}` : 'Página atual (sem linhas)'
-  const tooMany = ctx.numRows > EXCEL_MAX_DATA_ROWS
-  $('exp-all-label').textContent = tooMany
-    ? `Todas as linhas (${fmt(ctx.numRows)}): passa do limite do Excel`
-    : `Todas as linhas (${fmt(ctx.numRows)})`
+  const total = listLength()
+  $('exp-page-label').textContent = !total ? 'Página atual (sem linhas)' : state.result ? `Página atual (${plural(pe - ps, 'linha', 'linhas')} do resultado)` : `Página atual: linhas ${fmt(ps + 1)}–${fmt(pe)}`
+  const tooMany = total > EXCEL_MAX_DATA_ROWS
+  $('exp-all-label').textContent = state.result
+    ? `Todas as linhas do resultado (${fmt(total)}), na ordem da tabela${tooMany ? ': passa do limite do Excel' : ''}`
+    : tooMany ? `Todas as linhas (${fmt(total)}): passa do limite do Excel` : `Todas as linhas (${fmt(total)})`
+  $('exp-range-opt').hidden = !!state.result
   form.querySelector('input[name="exp-rows"][value="all"]').disabled = tooMany
   form.querySelector('input[name="exp-rows"][value="page"]').checked = true
   for (const id of ['exp-from', 'exp-to']) { $(id).min = '1'; $(id).max = String(Math.max(1, ctx.numRows)) }
@@ -2519,6 +3311,7 @@ function openExport() {
 
 function exportName(ctx, c) {
   const base = ctx.name.replace(/\.(parquet|parq|pq)$/i, '') || 'dados'
+  if (c.filtered) return c.start === 0 && c.end === state.result.length ? `${base}_filtrado.xlsx` : `${base}_filtrado_${c.start + 1}-${c.end}.xlsx`
   return c.whole ? `${base}.xlsx` : `${base}_linhas_${c.start + 1}-${c.end}.xlsx`
 }
 
@@ -2530,7 +3323,7 @@ function exportErrorText(err) {
     case 'too_large': return 'O arquivo ficou grande demais para o destino escolhido. Exporte menos linhas ou colunas.'
     case 'rejected_extension': case 'extension_not_enabled': return 'Esta visualização não permite salvar arquivos .xlsx. Use “Copiar para colar no Excel”.'
     case 'bad_request': case 'transform_error': return 'O pedido de download foi recusado por um erro interno. Tente de novo.'
-    case undefined: return `Não foi possível gerar o arquivo: ${err?.message || err}`
+    case undefined: return err instanceof ParquetError ? err.message : `Não foi possível gerar o arquivo: ${err?.message || err}`
     default:
       state.downloads = null
       return 'Esta visualização não permite baixar arquivos. Use “Copiar para colar no Excel”.'
@@ -2565,8 +3358,12 @@ async function downloadXlsx() {
   let message
   let ok = false
   try {
+    if (c.read) {
+      const res = await ensureTable(c.names, t => { $('exp-progress-text').textContent = t })
+      if (!res.ok) throw new ParquetError(res.error || 'O arquivo mudou durante a exportação.')
+    }
     const blob = await writeXlsx(ctx, {
-      start: c.start, end: c.end, names: c.names, derived: c.derived, exact: $('exp-exact').checked,
+      start: c.start, end: c.end, names: c.names, derived: c.derived, read: c.read, exact: $('exp-exact').checked,
       isCancelled: () => state.cancelExport, onProgress: progress('Gravando'),
     })
     const filename = exportName(ctx, c)
@@ -2611,8 +3408,12 @@ async function prepareCopy() {
   $('exp-bar').style.width = '0%'
   $('exp-progress-text').textContent = 'Lendo as linhas…'
   try {
+    if (c.read) {
+      const res = await ensureTable(c.names, t => { $('exp-progress-text').textContent = t })
+      if (!res.ok) throw new ParquetError(res.error || 'O arquivo mudou durante a cópia.')
+    }
     state.clip = await clipboardTable(state.ctx, {
-      start: c.start, end: c.end, names: c.names, derived: c.derived, exact: $('exp-exact').checked,
+      start: c.start, end: c.end, names: c.names, derived: c.derived, read: c.read, exact: $('exp-exact').checked,
       isCancelled: () => state.cancelExport, onProgress: progress('Preparando'),
     })
     state.clip.label = `${plural(c.end - c.start, 'linha', 'linhas')} × ${plural(c.ncols, 'coluna', 'colunas')}`
@@ -2716,6 +3517,59 @@ function wire() {
 
   $('cols-btn').addEventListener('click', e => { e.stopPropagation(); togglePicker() })
   $('muni-col').addEventListener('change', () => setMuni($('muni-col').value))
+  let searchTimer = 0
+  $('q').addEventListener('input', () => {
+    clearTimeout(searchTimer)
+    searchTimer = setTimeout(() => { if (state.ctx) commitQuery(q => { q.search = $('q').value }) }, 350)
+  })
+  $('qbar-clear').addEventListener('click', () => {
+    $('q').value = ''
+    commitQuery(q => { q.search = ''; q.filters.clear(); q.sort = null })
+  })
+  $('grid').addEventListener('click', e => {
+    const b = e.target.closest('.hbtn')
+    if (!b) return
+    e.stopPropagation()
+    const name = b.dataset.mc ? MUNI_COL : b.dataset.q
+    if (state.menu?.name === name && !$('hmenu').hidden) closeMenu()
+    else openMenu(name, b)
+  })
+  $('hm-asc').addEventListener('click', () => menuSort(1))
+  $('hm-desc').addEventListener('click', () => menuSort(-1))
+  $('hm-unsort').addEventListener('click', () => menuSort(0))
+  $('hm-clear').addEventListener('click', () => {
+    const name = state.menu?.name
+    closeMenu()
+    if (name) commitQuery(q => { q.filters.delete(name) })
+  })
+  $('hm-op').addEventListener('change', () => { syncCondArgs(); $('hm-error').hidden = true; if ($('hm-op').value) $('hm-a').focus() })
+  $('hm-search').addEventListener('input', renderMenuList)
+  $('hm-list').addEventListener('change', e => {
+    const m = state.menu
+    const box = e.target.closest('input[type="checkbox"]')
+    if (!m || !box) return
+    const key = m.entries[Number(box.dataset.i)].key
+    if (box.checked) m.excluded.delete(key)
+    else m.excluded.add(key)
+    $('hm-all').checked = m.shown.every(i => !m.excluded.has(m.entries[i].key))
+  })
+  $('hm-all').addEventListener('change', () => {
+    const m = state.menu
+    if (!m?.ready) return
+    for (const i of m.shown) {
+      if ($('hm-all').checked) m.excluded.delete(m.entries[i].key)
+      else m.excluded.add(m.entries[i].key)
+    }
+    renderMenuList()
+  })
+  $('hm-ok').addEventListener('click', applyMenu)
+  $('hm-cancel').addEventListener('click', closeMenu)
+  for (const id of ['hm-a', 'hm-b']) $(id).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); applyMenu() } })
+  $('hmenu').addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); closeMenu() } })
+  document.addEventListener('pointerdown', e => {
+    if (!$('hmenu').hidden && !e.target.closest('#hmenu') && !e.target.closest('.hbtn')) closeMenu()
+  })
+  window.addEventListener('resize', () => { if (state.menu?.anchor?.isConnected) placeMenu(state.menu.anchor) })
   $('col-list').addEventListener('change', columnsChanged)
   $('col-filter').addEventListener('input', () => {
     const q = $('col-filter').value.trim().toLowerCase()
@@ -2728,9 +3582,14 @@ function wire() {
   $('col-all').addEventListener('click', () => setShown(true))
   $('col-none').addEventListener('click', () => setShown(false))
   document.addEventListener('click', e => { if (!$('picker').hidden && !e.target.closest('.picker-wrap')) togglePicker(false) })
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('picker').hidden) { togglePicker(false); $('cols-btn').focus() } })
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return
+    if (!$('hmenu').hidden) closeMenu()
+    else if (!$('picker').hidden) { togglePicker(false); $('cols-btn').focus() }
+  })
 
   $('grid').addEventListener('click', e => {
+    if (e.target.closest('.hbtn')) return
     const td = e.target.closest('td')
     if (!td) return
     openDetail(td.parentElement.sectionRowIndex, Number(td.dataset.c))
