@@ -1,0 +1,82 @@
+/* Base elements and the page frame: top bar, notices, summary, tabs. */
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 var(--fs-m)/1.45 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+[hidden] { display: none !important; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.mono { font-family: var(--font-mono); }
+.num { font-variant-numeric: tabular-nums; }
+
+.app { display: flex; flex-direction: column; height: 100%; min-height: 540px; }
+
+/* Top bar */
+.topbar {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 8px 16px; background: var(--surface); border-bottom: 1px solid var(--line);
+}
+.brand { display: flex; align-items: center; gap: 9px; margin: 0; font: 600 var(--fs-l)/1 var(--font-display); letter-spacing: 0.01em; }
+.brand svg { flex: none; }
+.filechip {
+  display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1 1 260px;
+  font-size: var(--fs-s); color: var(--muted);
+}
+.filechip .fname { font-family: var(--font-mono); color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pill {
+  flex: none; padding: 2px 8px; border-radius: 999px; font-size: var(--fs-xs); font-weight: 600;
+  background: var(--accent-soft); color: var(--accent); letter-spacing: 0.02em;
+}
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 14px;
+  border: 1px solid var(--line); border-radius: 7px; background: var(--surface); cursor: pointer;
+  font-weight: 500; white-space: nowrap;
+}
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.small { height: 28px; padding: 0 10px; font-size: var(--fs-s); }
+.btn.icon { width: 32px; padding: 0; justify-content: center; }
+.btn:disabled { opacity: 0.45; cursor: default; border-color: var(--line); }
+.btn svg { flex: none; }
+
+/* Notices */
+.notice {
+  display: flex; gap: 14px; align-items: center; flex-wrap: wrap; padding: 6px 16px; font-size: var(--fs-s);
+  background: var(--accent-soft); color: var(--ink); border-bottom: 1px solid var(--line);
+}
+.notice.error { background: var(--danger-soft); color: var(--danger); }
+.notice p { margin: 0; flex: 1; }
+.linklike { background: none; border: 0; padding: 0; color: var(--accent); font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.notice.error .linklike { color: inherit; }
+
+/* Summary */
+.summary {
+  margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 1px;
+  background: var(--line); border-bottom: 1px solid var(--line);
+}
+.tile { background: var(--surface); padding: 10px 16px 11px; min-width: 0; }
+.tile dt { font-size: var(--fs-xs); color: var(--muted); letter-spacing: 0.03em; }
+.tile dd { margin: 2px 0 0; font: 600 var(--fs-xl)/1.15 var(--font-display); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tile dd.small { font: 500 var(--fs-m)/1.6 var(--font-mono); }
+.tile dd .sub { font: 400 var(--fs-s) var(--font-body); color: var(--muted); margin-left: 4px; }
+
+/* Tabs */
+.tabsrow { display: flex; align-items: center; gap: 12px; padding: 0 12px 0 0; background: var(--surface); border-bottom: 1px solid var(--line); }
+.tabs { display: flex; gap: 4px; padding: 0 12px; }
+.tabsrow .compact { flex: 1; min-width: 0; text-align: right; font-size: var(--fs-s); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+.tab {
+  position: relative; border: 0; background: none; padding: 9px 12px; cursor: pointer; color: var(--muted); font-weight: 500;
+}
+.tab[aria-selected="true"] { color: var(--ink); }
+.tab[aria-selected="true"]::after { content: ""; position: absolute; left: 8px; right: 8px; bottom: -1px; height: 2px; background: var(--accent); border-radius: 2px; }
+.tab .count { margin-left: 6px; font-size: var(--fs-xs); color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.panel { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; padding: 10px 16px 12px; }
+.panel.scroll { overflow: auto; }

@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: index.html corresponde a src/
+        run: npm run check
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - run: pip install -r requirements-dev.txt
+
+      - run: python -m playwright install --with-deps chromium
+
+      - name: Dados de teste (inclui os arquivos de 3 milhões de linhas)
+        run: python scripts/gen_testdata.py --big
+
+      - name: Testes unitários
+        run: npm test
+
+      - name: Testes no navegador
+        run: python -m pytest tests/browser -q

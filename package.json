@@ -1,0 +1,28 @@
+{
+  "name": "mcparquinho",
+  "private": true,
+  "type": "module",
+  "description": "Visualizador de arquivos Parquet que roda só no navegador.",
+  "homepage": "https://saulossorio.github.io/mcparquinho/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/saulossorio/mcparquinho.git"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/build.mjs --check",
+    "test": "node --test \"tests/unit/*.test.mjs\"",
+    "test:browser": "python3 -m pytest tests/browser -q",
+    "testdata": "python3 scripts/gen_testdata.py --big",
+    "verify": "npm run build && npm test && npm run test:browser"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "fzstd": "0.1.1",
+    "hyparquet": "1.31.5",
+    "hyparquet-compressors": "1.1.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

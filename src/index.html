@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>McParquinho</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/*__CSS__*/
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="topbar">
+    <h1 class="brand">
+      <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
+        <rect x="1" y="1" width="5.5" height="20" rx="1.5" fill="var(--accent)"/>
+        <rect x="8.25" y="1" width="5.5" height="20" rx="1.5" fill="var(--accent)" opacity="0.62"/>
+        <rect x="15.5" y="1" width="5.5" height="20" rx="1.5" fill="var(--accent)" opacity="0.34"/>
+        <path d="M1 7.5h20M1 14h20" stroke="var(--surface)" stroke-width="1.6"/>
+      </svg>
+      McParquinho
+    </h1>
+    <div class="filechip" id="filechip" hidden>
+      <span class="fname" id="fname"></span>
+      <span class="num" id="fsize"></span>
+      <span class="pill" id="samplepill" hidden>Exemplo</span>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="open-btn" type="button">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4.5V13h12V6H8L6.5 4.5H2Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        Abrir arquivo
+      </button>
+      <button class="btn" id="export-btn" type="button" hidden>
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8m0 0-3-3m3 3 3-3M3 12.5h10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Exportar para Excel
+      </button>
+    </div>
+    <input type="file" id="file-input" hidden>
+  </header>
+
+  <div class="notice" id="sample-notice" hidden>
+    <p>Você está vendo um arquivo de exemplo com pedidos fictícios. Abra ou arraste um arquivo .parquet para ver o seu. O arquivo é lido só neste navegador; nada é enviado.</p>
+    <button class="linklike" id="sample-open" type="button">Abrir arquivo</button>
+    <button class="linklike" id="sample-close" type="button">Fechar aviso</button>
+  </div>
+  <div class="notice error" id="alert" role="alert" hidden>
+    <p id="alert-text"></p>
+    <button class="linklike" id="alert-close" type="button">Fechar</button>
+  </div>
+
+  <div class="tabsrow" id="tabsrow" hidden>
+    <nav class="tabs" role="tablist" aria-label="Visões do arquivo" id="tabs">
+      <button class="tab" role="tab" id="tab-data" aria-controls="panel-data" aria-selected="true" type="button">Dados</button>
+      <button class="tab" role="tab" id="tab-schema" aria-controls="panel-schema" aria-selected="false" tabindex="-1" type="button">Esquema<span class="count" id="schema-count"></span></button>
+      <button class="tab" role="tab" id="tab-meta" aria-controls="panel-meta" aria-selected="false" tabindex="-1" type="button">Metadados<span class="count" id="meta-count"></span></button>
+    </nav>
+    <span class="compact" id="compact-info"></span>
+    <button class="btn small" id="summary-toggle" type="button" aria-expanded="false" aria-controls="summary">Resumo <span aria-hidden="true" id="summary-caret">▾</span></button>
+  </div>
+  <dl class="summary" id="summary" hidden></dl>
+
+  <section class="panel" id="panel-data" role="tabpanel" aria-labelledby="tab-data" hidden>
+    <div class="toolbar">
+      <div class="picker-wrap">
+        <button class="btn small" id="cols-btn" type="button" aria-expanded="false" aria-controls="picker">
+          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M1.5 2h3v10h-3zM5.5 2h3v10h-3zM9.5 2h3v10h-3z" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>
+          Colunas <span class="num" id="cols-count"></span>
+        </button>
+        <div class="picker" id="picker" hidden>
+          <label class="sr" for="col-filter">Filtrar colunas</label>
+          <input type="search" id="col-filter" placeholder="Filtrar colunas" autocomplete="off">
+          <div class="row">
+            <button class="btn small" id="col-all" type="button">Mostrar todas</button>
+            <button class="btn small" id="col-none" type="button">Ocultar todas</button>
+          </div>
+          <ul id="col-list"></ul>
+        </div>
+      </div>
+      <label class="field" id="muni-field" for="muni-col" hidden>Município
+        <select id="muni-col"><option value="">não mostrar</option></select>
+      </label>
+      <div class="searchbox">
+        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="6" cy="6" r="4.3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="m9.2 9.2 3.3 3.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <input type="search" id="q" placeholder="Buscar nas colunas" aria-label="Buscar em todas as colunas visíveis" autocomplete="off">
+      </div>
+      <div class="spacer"></div>
+      <div class="pager">
+        <button class="btn small icon" id="pg-first" type="button" aria-label="Primeira página">«</button>
+        <button class="btn small icon" id="pg-prev" type="button" aria-label="Página anterior">‹</button>
+        <span class="range" id="pg-range" aria-live="polite"></span>
+        <button class="btn small icon" id="pg-next" type="button" aria-label="Próxima página">›</button>
+        <button class="btn small icon" id="pg-last" type="button" aria-label="Última página">»</button>
+      </div>
+      <form class="field" id="goto-form">
+        <label for="goto-row">Ir para</label>
+        <input type="number" id="goto-row" min="1" step="1" inputmode="numeric">
+        <button class="btn small" type="submit">Ir</button>
+      </form>
+      <label class="field" for="page-size">Por página
+        <select id="page-size">
+          <option value="50">50</option>
+          <option value="100" selected>100</option>
+          <option value="250">250</option>
+          <option value="500">500</option>
+        </select>
+      </label>
+    </div>
+    <p class="hint" id="cols-hint" hidden></p>
+    <div class="statusrow">
+    <div class="selbar" id="selbar" role="status" hidden>
+      <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="1.5" width="13" height="13" rx="3" fill="currentColor"/><path d="m4.5 8.2 2.3 2.3 4.7-5" fill="none" stroke="var(--surface)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <p><strong id="sel-text"></strong></p>
+      <button class="linklike" id="sel-clear" type="button">Desmarcar todas</button>
+    </div>
+    <div class="qbar" id="qbar" role="status" hidden>
+      <p id="qbar-text"></p>
+      <button class="linklike" id="qbar-clear" type="button">Limpar busca, filtros e ordem</button>
+    </div>
+    </div>
+    <div class="rgmap" id="rgmap" hidden>
+      <span class="lbl" id="rg-label">Row groups</span>
+      <div class="rgbar" id="rgbar" role="slider" tabindex="0" aria-label="Posição no arquivo" aria-valuemin="1" aria-valuemax="1" aria-valuenow="1" title="Arraste ou clique para andar pelo arquivo"><div class="rgmark" id="rgmark"></div></div>
+      <span class="where" id="rg-where"></span>
+    </div>
+    <p class="inline-error" id="data-error" role="alert" hidden></p>
+    <div class="grid-wrap" id="grid-wrap" tabindex="0" aria-label="Linhas do arquivo. Use as setas para andar entre as células e Enter para ver o valor completo.">
+      <div class="loadbar" id="loadbar" hidden></div>
+      <table class="grid" id="grid"></table>
+      <div class="empty" id="grid-empty" hidden></div>
+    </div>
+  </section>
+
+  <section class="panel scroll" id="panel-schema" role="tabpanel" aria-labelledby="tab-schema" hidden></section>
+  <section class="panel scroll" id="panel-meta" role="tabpanel" aria-labelledby="tab-meta" hidden></section>
+
+  <div class="fatal" id="boot">
+    <h2>Carregando o leitor de Parquet…</h2>
+    <p>Se esta mensagem não sumir, verifique a conexão com cdn.jsdelivr.net e recarregue a página.</p>
+  </div>
+</div>
+
+<dialog id="cell-dialog" aria-labelledby="cell-title">
+  <div class="dlg detail">
+    <header>
+      <div class="grow">
+        <h2 id="cell-title"></h2>
+        <div class="meta" id="cell-meta"></div>
+      </div>
+      <button class="btn small icon" id="cell-close-x" type="button" aria-label="Fechar">✕</button>
+    </header>
+    <div class="body" id="cell-body"></div>
+    <footer>
+      <span class="status" id="cell-status" aria-live="polite"></span>
+      <button class="btn" id="cell-copy" type="button">Copiar valor</button>
+      <button class="btn primary" id="cell-close" type="button">Fechar</button>
+    </footer>
+  </div>
+</dialog>
+
+<dialog id="export-dialog" aria-labelledby="exp-title">
+  <form class="dlg exp" id="export-form" method="dialog">
+    <header>
+      <div class="grow">
+        <h2 id="exp-title">Exportar para Excel (.xlsx)</h2>
+        <div class="meta" id="exp-file"></div>
+      </div>
+      <button class="btn small icon" id="exp-close-x" type="button" aria-label="Fechar">✕</button>
+    </header>
+    <div class="body">
+      <div id="exp-options">
+        <fieldset>
+          <legend>Linhas</legend>
+          <label class="opt"><input type="radio" name="exp-rows" value="page" checked> <span id="exp-page-label">Página atual</span></label>
+          <label class="opt"><input type="radio" name="exp-rows" value="all"> <span id="exp-all-label">Todas as linhas</span></label>
+          <label class="opt" id="exp-range-opt"><input type="radio" name="exp-rows" value="range"> Intervalo: da linha
+            <input type="number" id="exp-from" min="1" step="1" aria-label="Primeira linha"> até
+            <input type="number" id="exp-to" min="1" step="1" aria-label="Última linha"></label>
+        </fieldset>
+        <fieldset>
+          <legend>Colunas</legend>
+          <label class="opt"><input type="radio" name="exp-cols" value="visible" checked> <span id="exp-vis-label">Visíveis na tabela</span></label>
+          <label class="opt"><input type="radio" name="exp-cols" value="all"> <span id="exp-allcols-label">Todas</span></label>
+        </fieldset>
+        <fieldset>
+          <legend>Números longos</legend>
+          <label class="opt"><input type="checkbox" id="exp-exact" checked> Manter como texto os números com mais de 15 dígitos, para não perder precisão</label>
+        </fieldset>
+        <div class="notes">
+          <ul>
+            <li>Datas e horários viram datas do Excel, com precisão de milissegundo; colunas marcadas como UTC ficam no horário UTC.</li>
+            <li>Listas, structs e mapas viram texto JSON numa célula.</li>
+            <li>O Excel aceita até 1.048.575 linhas por planilha.</li>
+          </ul>
+        </div>
+        <p class="warn" id="exp-warn" hidden></p>
+        <p class="warn" id="exp-avail" hidden></p>
+      </div>
+      <div id="exp-progress" hidden>
+        <p id="exp-progress-text">Preparando…</p>
+        <div class="progress"><div id="exp-bar"></div></div>
+      </div>
+      <p class="result" id="exp-result" role="status" hidden></p>
+    </div>
+    <footer>
+      <span class="status" id="exp-estimate"></span>
+      <button class="btn" id="exp-cancel" type="button">Cancelar</button>
+      <button class="btn" id="exp-copy" type="button">Copiar para colar no Excel</button>
+      <button class="btn primary" id="exp-go" type="submit">Baixar .xlsx</button>
+    </footer>
+  </form>
+</dialog>
+
+<div class="hmenu" id="hmenu" role="dialog" aria-label="Ordenar e filtrar" hidden>
+  <button class="hm-item" id="hm-asc" type="button"></button>
+  <button class="hm-item" id="hm-desc" type="button"></button>
+  <button class="hm-item" id="hm-unsort" type="button">Tirar a ordenação</button>
+  <button class="hm-item" id="hm-clear" type="button"></button>
+  <hr class="hm-sep">
+  <div class="hm-cond" id="hm-cond">
+    <label for="hm-op">Mostrar as linhas em que o valor</label>
+    <select id="hm-op"></select>
+    <div class="row" id="hm-args" hidden>
+      <input id="hm-a" type="text" autocomplete="off" aria-label="Valor da condição">
+      <span id="hm-and" hidden>e</span>
+      <input id="hm-b" type="text" autocomplete="off" aria-label="Segundo valor" hidden>
+    </div>
+  </div>
+  <input type="search" id="hm-search" placeholder="Buscar valores" aria-label="Buscar valores da coluna" autocomplete="off">
+  <label class="hm-all"><input type="checkbox" id="hm-all"> (Selecionar tudo)</label>
+  <ul id="hm-list"></ul>
+  <p class="hint" id="hm-note"></p>
+  <p class="inline-error" id="hm-error" hidden></p>
+  <div class="row end">
+    <button class="btn small" id="hm-cancel" type="button">Cancelar</button>
+    <button class="btn small primary" id="hm-ok" type="button">Aplicar</button>
+  </div>
+</div>
+
+<div class="drop" id="drop" hidden><div>Solte o arquivo .parquet para abrir</div></div>
+
+<script type="module">
+/*__JS__*/
+</script>
+</body>
+</html>

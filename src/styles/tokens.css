@@ -1,0 +1,83 @@
+/* Design tokens: light palette in :root, dark palette for prefers-color-scheme and data-theme. Style everything through these. */
+:root {
+  /* Layout: one-screen tool. Header, summary and tabs stay put; the active panel fills the rest and scrolls inside. */
+  --bg: #f3f5f6;
+  --surface: #ffffff;
+  --ink: #132027;
+  --muted: #586771;
+  --line: #d8dfe3;
+  --accent: #0c676c;
+  --accent-ink: #ffffff;
+  --accent-soft: #ddefee;
+  --mark: #c27416;
+  --t-number: #0c676c;
+  --t-text: #4a5965;
+  --t-time: #6a4ca3;
+  --t-bool: #9a5c08;
+  --t-nested: #2c5ba6;
+  --t-binary: #a13a57;
+  --null: #8f9ba4;
+  --danger: #b42318;
+  --danger-soft: #fdeceb;
+  --zebra: #f8fafa;
+  --shadow: 0 1px 2px rgb(19 32 39 / 6%), 0 8px 24px rgb(19 32 39 / 8%);
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --fs-xs: 11px;
+  --fs-s: 12.5px;
+  --fs-m: 14px;
+  --fs-l: 17px;
+  --fs-xl: 22px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1316;
+    --surface: #141c20;
+    --ink: #e2e9ed;
+    --muted: #93a3ad;
+    --line: #26333a;
+    --accent: #4dbfbe;
+    --accent-ink: #04201f;
+    --accent-soft: #123134;
+    --mark: #e9a548;
+    --t-number: #5cc6c2;
+    --t-text: #a7b6c0;
+    --t-time: #b59cec;
+    --t-bool: #e6b05c;
+    --t-nested: #86aff2;
+    --t-binary: #ee8aa6;
+    --null: #5f6f79;
+    --danger: #ff8b7b;
+    --danger-soft: #3a1714;
+    --zebra: #172126;
+    --shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 10px 30px rgb(0 0 0 / 40%);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0d1316;
+  --surface: #141c20;
+  --ink: #e2e9ed;
+  --muted: #93a3ad;
+  --line: #26333a;
+  --accent: #4dbfbe;
+  --accent-ink: #04201f;
+  --accent-soft: #123134;
+  --mark: #e9a548;
+  --t-number: #5cc6c2;
+  --t-text: #a7b6c0;
+  --t-time: #b59cec;
+  --t-bool: #e6b05c;
+  --t-nested: #86aff2;
+  --t-binary: #ee8aa6;
+  --null: #5f6f79;
+  --danger: #ff8b7b;
+  --danger-soft: #3a1714;
+  --zebra: #172126;
+  --shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 10px 30px rgb(0 0 0 / 40%);
+  color-scheme: dark;
+}

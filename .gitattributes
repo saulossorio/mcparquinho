@@ -1,0 +1,4 @@
+* text=auto eol=lf
+*.parquet binary
+# Built from src/ by scripts/build.mjs: collapsed in GitHub diffs and left out of language stats.
+/index.html linguist-generated=true

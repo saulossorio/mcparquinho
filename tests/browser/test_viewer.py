@@ -1,0 +1,173 @@
+"""Main flows: example file, detail dialog, keyboard, slider, paging, columns, tabs, export, errors, special files."""
+import time
+
+import openpyxl
+
+from helpers import TESTDATA, Checks, cell, need, open_file, range_text, saved_xlsx, total, wait_rows
+
+
+def test_exemplo_navegacao_e_exportacao(open_page, tmp_path):
+    check = Checks()
+    page = open_page()
+    wait_rows(page, 100)
+    check('1–100' in range_text(page) and '480' in range_text(page), f'paginação inicial: {range_text(page)!r}')
+    check(page.is_visible('#export-btn'), 'botão Exportar visível com downloads disponível')
+    check(page.is_visible('#sample-notice'), 'aviso de exemplo visível')
+    check(cell(page, 0, 'valor_total') == '193.05', 'decimal exato na tabela')
+    check(cell(page, 0, 'criado_em') == '2026-08-01 08:33:31.335003Z', 'timestamp em µs com fuso UTC')
+
+    page.click('#grid tbody tr:nth-child(2) td[data-c="7"]')
+    page.wait_for_selector('#cell-dialog[open]')
+    body = page.inner_text('#cell-body')
+    check('CAD-10' in body and '"qtd": 3' in body, 'detalhe de célula aninhada mostra JSON formatado')
+    page.click('#cell-close')
+    page.focus('#grid-wrap')
+    page.keyboard.press('ArrowDown')
+    page.keyboard.press('Home')
+    page.keyboard.press('Enter')
+    page.wait_for_selector('#cell-dialog[open]')
+    check(page.inner_text('#cell-title') == 'pedido_id' and '2026080018' in page.inner_text('#cell-body'),
+          'teclado: setas, Home e Enter abrem o detalhe')
+    page.keyboard.press('Escape')
+
+    # slider: drag, click, keyboard
+    box = page.locator('#rgbar').bounding_box()
+    y = box['y'] + box['height'] / 2
+    page.mouse.move(box['x'] + 5, y)
+    page.mouse.down()
+    page.mouse.move(box['x'] + box['width'] * 0.5, y, steps=8)
+    page.mouse.move(box['x'] + box['width'] * 0.8, y, steps=8)
+    page.mouse.up()
+    page.wait_for_function('() => document.getElementById("pg-range").textContent.includes("301–400")', timeout=10000)
+    wait_rows(page)
+    check(True, 'arrastar o slider até 80% leva às linhas 301–400')
+    page.mouse.click(box['x'] + box['width'] * 0.1, y)
+    page.wait_for_function('() => document.getElementById("pg-range").textContent.includes("1–100")', timeout=10000)
+    page.focus('#rgbar')
+    page.keyboard.press('End')
+    page.wait_for_function('() => document.getElementById("pg-range").textContent.includes("401–480")', timeout=10000)
+    page.keyboard.press('ArrowLeft')
+    page.wait_for_function('() => document.getElementById("pg-range").textContent.includes("301–400")', timeout=10000)
+    check(page.get_attribute('#rgbar', 'aria-valuenow') == '301', 'teclado no slider e aria-valuenow')
+    page.keyboard.press('Home')
+    page.wait_for_function('() => document.getElementById("pg-range").textContent.includes("1–100")', timeout=10000)
+    wait_rows(page)
+
+    # paging
+    page.click('#pg-next')
+    wait_rows(page)
+    check('101–200' in range_text(page), 'próxima página')
+    page.click('#pg-last')
+    wait_rows(page, 80)
+    check('401–480' in range_text(page), 'última página')
+    page.fill('#goto-row', '250')
+    page.click('#goto-form button')
+    wait_rows(page)
+    check('201–300' in range_text(page) and page.query_selector('#grid td.active') is not None, 'ir para a linha 250')
+    page.select_option('#page-size', '500')
+    wait_rows(page, 480)
+    check('1–480' in range_text(page), 'página com 500 linhas mostra o arquivo todo')
+
+    # column picker
+    page.click('#cols-btn')
+    page.uncheck('#col-list input[data-name="itens"]')
+    page.uncheck('#col-list input[data-name="tags"]')
+    page.wait_for_function('() => document.querySelectorAll("#grid thead th").length === 12', timeout=10000)
+    check(page.inner_text('#cols-count') == '11/13', 'contador de colunas')
+    page.keyboard.press('Escape')
+
+    # schema and metadata
+    page.click('#tab-schema')
+    check(page.eval_on_selector_all('#panel-schema tbody tr', 'r => r.length') >= 20, 'esquema inclui os campos aninhados')
+    page.click('#tab-meta')
+    page.click('.rgdetails summary')
+    page.wait_for_selector('.rgdetails[open] .rgbody table')
+    check(page.eval_on_selector_all('.rgdetails[open] .rgbody tbody tr', 'r => r.length') >= 13, 'column chunks do row group 1')
+    check('2026-08-01' in page.inner_text('.rgdetails[open] .rgbody tbody'), 'estatísticas mín/máx formatadas')
+    page.click('#tab-data')
+
+    # export (visible columns, all rows)
+    page.click('#export-btn')
+    page.wait_for_selector('#export-dialog[open]')
+    page.check('input[name="exp-rows"][value="all"]')
+    check('480 linhas × 11 colunas' in page.inner_text('#exp-estimate'), 'estimativa da exportação')
+    page.click('#exp-go')
+    name, _ = saved_xlsx(page, tmp_path / 'exemplo.xlsx')
+    page.wait_for_selector('#exp-result:not([hidden])')
+    ws = openpyxl.load_workbook(tmp_path / 'exemplo.xlsx').active
+    check(name == 'exemplo-vendas.xlsx' and ws.max_row == 481 and ws.max_column == 11, f'xlsx do exemplo {ws.max_row}×{ws.max_column}')
+    check(ws['H1'].value == 'valor_total' and ws['H2'].value == 193.05 and ws['H2'].number_format == '0.00', 'decimal como número com 2 casas')
+    page.click('#exp-cancel')
+    check(not page.errors, f'sem erros no console ({page.errors[:2]})')
+    check.done()
+
+
+def test_tipos_e_erros(open_page):
+    need('types.parquet', 'nao_parquet.bin', 'truncado.parquet', 'cripto.parquet')
+    check = Checks()
+    page = open_page()
+    wait_rows(page, 100)
+    open_file(page, 'types.parquet', 'i8')
+    check(cell(page, 1, 'i64') == '9223372036854775807', 'int64 máximo exato')
+    check(cell(page, 1, 'dec38_10') == '1234567890123456789012345678.1234567890', 'decimal(38,10) exato')
+    check(cell(page, 3, 'ts_ns') == '1970-01-01 00:00:00.123456789', 'timestamp em nanossegundos')
+    check(not page.is_visible('#sample-notice'), 'aviso de exemplo some com arquivo do usuário')
+    for f, fragment in [('nao_parquet.bin', 'não é Parquet'), ('truncado.parquet', 'cortado'), ('cripto.parquet', 'criptografado')]:
+        page.set_input_files('#file-input', str(TESTDATA / f))
+        page.wait_for_selector('#alert:not([hidden])')
+        check(fragment in page.inner_text('#alert-text'), f'{f}: erro explicado')
+        page.click('#alert-close')
+    check(not page.errors, f'sem erros no console ({page.errors[:2]})')
+    check.done()
+
+
+def test_arquivos_especiais(open_page):
+    need('wide.parquet', 'manyrg.parquet', 'empty.parquet')
+    check = Checks()
+    page = open_page()
+    wait_rows(page, 100)
+    open_file(page, 'wide.parquet', 'c0000')
+    check(page.eval_on_selector_all('#grid thead th', 'h => h.length') == 201 and page.is_visible('#cols-hint'),
+          'arquivo com 1.200 colunas abre com 200 e avisa')
+    open_file(page, 'manyrg.parquet', 'id')
+    segments = page.eval_on_selector_all('.rgseg', 's => s.length')
+    seg = page.locator('.rgseg[data-g="150"]').bounding_box()
+    page.mouse.click(seg['x'] + seg['width'] / 2, seg['y'] + seg['height'] / 2)
+    page.wait_for_function('() => document.getElementById("pg-range").textContent.includes("15.001")', timeout=10000)
+    check(segments == 200, 'clicar no row group 151 do slider leva à linha 15.001')
+    page.set_input_files('#file-input', str(TESTDATA / 'empty.parquet'))
+    page.wait_for_selector('#grid-empty:not([hidden])')
+    check('não tem linhas' in page.inner_text('#grid-empty'), 'arquivo sem linhas')
+    check(not page.errors, f'sem erros no console ({page.errors[:2]})')
+    check.done()
+
+
+def test_arquivo_grande(open_page, tmp_path):
+    need('big_noidx.parquet')
+    check = Checks()
+    page = open_page()
+    wait_rows(page, 100)
+    t0 = time.time()
+    open_file(page, 'big_noidx.parquet', 'id')
+    check(True, f'3 milhões de linhas: primeira página em {time.time() - t0:.2f}s')
+    page.fill('#goto-row', '2999990')
+    page.click('#goto-form button')
+    page.wait_for_function('() => document.querySelector("#grid tbody .rn")?.textContent.includes("2.999.901")', timeout=60000)
+    wait_rows(page)
+    check(cell(page, 89, 'id') == '2999989', 'linha 2.999.990 tem id 2999989')
+    page.click('#export-btn')
+    page.wait_for_selector('#export-dialog[open]')
+    page.check('input[name="exp-rows"][value="range"]')
+    page.fill('#exp-from', '900001')
+    page.fill('#exp-to', '1100000')
+    check('200.000 linhas × 8 colunas' in page.inner_text('#exp-estimate'), 'estimativa de 200 mil linhas')
+    t0 = time.time()
+    page.click('#exp-go')
+    name, size = saved_xlsx(page, tmp_path / 'grande.xlsx')
+    check(True, f'exportou 200 mil linhas em {time.time() - t0:.1f}s ({size / 2**20:.1f} MB)')
+    wb = openpyxl.load_workbook(tmp_path / 'grande.xlsx', read_only=True)
+    first = next(wb.active.iter_rows(min_row=2, max_row=2, values_only=True))
+    check(first[0] == 900000 and wb.active.max_row == 200001, 'xlsx grande começa na linha certa e tem 200 mil linhas')
+    check(total(page) == 3000000, 'total de linhas')
+    check(not page.errors, f'sem erros no console ({page.errors[:2]})')
+    check.done()
