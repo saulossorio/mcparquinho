@@ -112,7 +112,7 @@ button, input, select { font: inherit; color: inherit; }
 /* Top bar */
 .topbar {
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-  padding: 10px 16px; background: var(--surface); border-bottom: 1px solid var(--line);
+  padding: 8px 16px; background: var(--surface); border-bottom: 1px solid var(--line);
 }
 .brand { display: flex; align-items: center; gap: 9px; margin: 0; font: 600 var(--fs-l)/1 var(--font-display); letter-spacing: 0.01em; }
 .brand svg { flex: none; }
@@ -141,7 +141,7 @@ button, input, select { font: inherit; color: inherit; }
 
 /* Notices */
 .notice {
-  display: flex; gap: 10px; align-items: center; padding: 8px 16px; font-size: var(--fs-s);
+  display: flex; gap: 14px; align-items: center; flex-wrap: wrap; padding: 6px 16px; font-size: var(--fs-s);
   background: var(--accent-soft); color: var(--ink); border-bottom: 1px solid var(--line);
 }
 .notice.error { background: var(--danger-soft); color: var(--danger); }
@@ -161,19 +161,19 @@ button, input, select { font: inherit; color: inherit; }
 .tile dd .sub { font: 400 var(--fs-s) var(--font-body); color: var(--muted); margin-left: 4px; }
 
 /* Row group map */
-.rgmap { display: flex; align-items: center; gap: 12px; padding: 9px 16px; background: var(--surface); border-bottom: 1px solid var(--line); font-size: var(--fs-s); color: var(--muted); }
+.rgmap { display: flex; align-items: center; gap: 12px; font-size: var(--fs-xs); color: var(--muted); }
 .rgmap .lbl { flex: none; }
 .rgbar {
-  position: relative; flex: 1; display: flex; gap: 2px; height: 14px; padding: 8px 0; box-sizing: content-box; min-width: 120px;
+  position: relative; flex: 1; display: flex; gap: 2px; height: 10px; padding: 6px 0; box-sizing: content-box; min-width: 120px;
   cursor: pointer; touch-action: pan-y; user-select: none; -webkit-user-select: none; border-radius: 6px;
 }
 .rgbar:focus-visible { outline-offset: 0; }
 .rgbar.dragging { cursor: grabbing; }
 .rgseg { flex-basis: 0; min-width: 3px; height: 100%; border-radius: 3px; background: color-mix(in srgb, var(--accent) 22%, var(--surface)); }
 .rgbar:hover .rgseg { background: color-mix(in srgb, var(--accent) 32%, var(--surface)); }
-.rgbar.dense::before { content: ""; position: absolute; left: 0; right: 0; top: 8px; bottom: 8px; border-radius: 3px; background: color-mix(in srgb, var(--accent) 22%, var(--surface)); }
+.rgbar.dense::before { content: ""; position: absolute; left: 0; right: 0; top: 6px; bottom: 6px; border-radius: 3px; background: color-mix(in srgb, var(--accent) 22%, var(--surface)); }
 .rgmark {
-  position: absolute; top: 4px; bottom: 4px; min-width: 8px; border: 2px solid var(--mark); border-radius: 6px; pointer-events: none;
+  position: absolute; top: 2px; bottom: 2px; min-width: 8px; border: 2px solid var(--mark); border-radius: 6px; pointer-events: none;
   background: color-mix(in srgb, var(--mark) 18%, transparent); box-shadow: 0 1px 3px rgb(0 0 0 / 18%); cursor: grab;
   transition: left 0.15s ease, width 0.15s ease;
 }
@@ -181,15 +181,17 @@ button, input, select { font: inherit; color: inherit; }
 .rgmap .where { flex: none; font-variant-numeric: tabular-nums; }
 
 /* Tabs */
-.tabs { display: flex; gap: 4px; padding: 0 12px; background: var(--surface); border-bottom: 1px solid var(--line); }
+.tabsrow { display: flex; align-items: center; gap: 12px; padding: 0 12px 0 0; background: var(--surface); border-bottom: 1px solid var(--line); }
+.tabs { display: flex; gap: 4px; padding: 0 12px; }
+.tabsrow .compact { flex: 1; min-width: 0; text-align: right; font-size: var(--fs-s); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
 .tab {
-  position: relative; border: 0; background: none; padding: 10px 12px; cursor: pointer; color: var(--muted); font-weight: 500;
+  position: relative; border: 0; background: none; padding: 9px 12px; cursor: pointer; color: var(--muted); font-weight: 500;
 }
 .tab[aria-selected="true"] { color: var(--ink); }
 .tab[aria-selected="true"]::after { content: ""; position: absolute; left: 8px; right: 8px; bottom: -1px; height: 2px; background: var(--accent); border-radius: 2px; }
 .tab .count { margin-left: 6px; font-size: var(--fs-xs); color: var(--muted); font-variant-numeric: tabular-nums; }
 
-.panel { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px; padding: 12px 16px 16px; }
+.panel { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; padding: 10px 16px 12px; }
 .panel.scroll { overflow: auto; }
 
 /* Data toolbar */
@@ -213,7 +215,10 @@ button, input, select { font: inherit; color: inherit; }
   height: 30px; width: 210px; padding: 0 10px 0 28px; border: 1px solid var(--line); border-radius: 6px;
   background: var(--surface); font-size: var(--fs-s);
 }
-.qbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 7px 12px; border-radius: 8px; background: var(--accent-soft); font-size: var(--fs-s); }
+.statusrow { display: flex; gap: 8px; flex-wrap: wrap; }
+.statusrow:not(:has(> :not([hidden]))) { display: none; }
+.statusrow > * { flex: 1 1 320px; }
+.qbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 4px 12px; border-radius: 8px; background: var(--accent-soft); font-size: var(--fs-s); }
 .qbar p { margin: 0; flex: 1; min-width: 200px; }
 .qbar.error { background: var(--danger-soft); color: var(--danger); }
 .qbar.error .linklike { color: inherit; }
@@ -247,16 +252,22 @@ button, input, select { font: inherit; color: inherit; }
 #hm-list .v { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #hm-list .v.dim { color: var(--muted); font-style: italic; }
 #hm-list .cnt { flex: none; color: var(--muted); font-variant-numeric: tabular-nums; font-size: var(--fs-xs); }
-.hmenu .row.end { display: flex; justify-content: flex-end; gap: 6px; }
+.hmenu .row.end {
+  display: flex; justify-content: flex-end; gap: 6px; position: sticky; bottom: -8px; z-index: 1;
+  margin: 0 -8px -8px; padding: 8px; background: var(--surface); border-top: 1px solid var(--line); border-radius: 0 0 10px 10px;
+}
 .hmenu .hint:empty { display: none; }
 
 /* Column picker */
 .picker-wrap { position: relative; }
 .picker {
-  position: absolute; z-index: 20; top: calc(100% + 6px); left: 0; width: min(380px, 86vw);
+  position: absolute; z-index: 20; top: calc(100% + 6px); left: 0; width: min(380px, 86vw); overflow: hidden;
   background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow);
   padding: 10px; display: flex; flex-direction: column; gap: 8px;
 }
+.picker.up { top: auto; bottom: calc(100% + 6px); }
+.picker > * { flex-shrink: 0; }
+.picker > ul { flex-shrink: 1; min-height: 60px; }
 .picker input[type="search"] { height: 32px; border: 1px solid var(--line); border-radius: 6px; padding: 0 10px; background: var(--bg); }
 .picker .row { display: flex; gap: 6px; align-items: center; }
 .picker ul { list-style: none; margin: 0; padding: 0; max-height: 300px; overflow: auto; border-top: 1px solid var(--line); }
@@ -303,6 +314,11 @@ button, input, select { font: inherit; color: inherit; }
 .grid th.f-nested .ct { color: var(--t-nested); }
 .grid th.f-binary .ct { color: var(--t-binary); }
 .grid td.active { outline: 2px solid var(--accent); outline-offset: -2px; }
+.grid .rn { user-select: none; -webkit-user-select: none; min-width: 84px; cursor: pointer; }
+.selcell { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.selcell input { margin: 0; width: 15px; height: 15px; accent-color: var(--accent); cursor: pointer; }
+.selbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 3px 12px; border-radius: 8px; border: 1px solid var(--accent); color: var(--accent); font-size: var(--fs-s); background: var(--surface); }
+.selbar p { margin: 0; flex: 1; min-width: 180px; color: var(--ink); }
 .grid thead th.virt, .grid tbody tr td.virt { background: color-mix(in srgb, var(--accent) 7%, var(--surface)); }
 .grid tbody tr:hover td.virt { background: color-mix(in srgb, var(--accent) 13%, var(--surface)); }
 .grid th.virt .ct { color: var(--accent); }
@@ -416,8 +432,14 @@ dialog::backdrop { background: rgb(8 14 17 / 45%); }
   .tile dd { font-size: var(--fs-l); }
   .panel { padding: 10px 12px 12px; }
   .range { min-width: 0; }
-  .rgmap { padding: 8px 12px; }
   .rgmap .where { display: none; }
+  .tabsrow .compact { display: none; }
+  .tabsrow { flex-wrap: wrap; }
+  /* Phones: the page scrolls and the table keeps most of the screen height */
+  .app { height: auto; min-height: 100%; }
+  .panel { flex: none; }
+  .grid-wrap { flex: none; height: 78vh; height: 78dvh; }
+  .toolbar .field input[type="number"] { width: 90px; }
   .rgdetails > summary, .rghead { grid-template-columns: 50px repeat(2, 1fr); }
   .rgdetails > summary .opt, .rghead .opt { display: none; }
   .searchbox, .searchbox input { width: 100%; }
@@ -427,6 +449,10 @@ dialog::backdrop { background: rgb(8 14 17 / 45%); }
   .loadbar::before { animation: none; width: 100%; opacity: 0.6; }
   .rgmark, .progress > div { transition: none; }
 }
+
+/* Marked rows (after zebra, hover and derived-column tints so it wins) */
+.grid tbody tr.sel td, .grid tbody tr.sel .rn { background: color-mix(in srgb, var(--accent) 16%, var(--surface)); }
+.grid tbody tr.sel:hover td, .grid tbody tr.sel:hover .rn { background: color-mix(in srgb, var(--accent) 22%, var(--surface)); }
 
 </style>
 </head>
@@ -463,24 +489,23 @@ dialog::backdrop { background: rgb(8 14 17 / 45%); }
   <div class="notice" id="sample-notice" hidden>
     <p>Você está vendo um arquivo de exemplo com pedidos fictícios. Abra ou arraste um arquivo .parquet para ver o seu. O arquivo é lido só neste navegador; nada é enviado.</p>
     <button class="linklike" id="sample-open" type="button">Abrir arquivo</button>
+    <button class="linklike" id="sample-close" type="button">Fechar aviso</button>
   </div>
   <div class="notice error" id="alert" role="alert" hidden>
     <p id="alert-text"></p>
     <button class="linklike" id="alert-close" type="button">Fechar</button>
   </div>
 
-  <dl class="summary" id="summary" hidden></dl>
-  <div class="rgmap" id="rgmap" hidden>
-    <span class="lbl" id="rg-label">Row groups</span>
-    <div class="rgbar" id="rgbar" role="slider" tabindex="0" aria-label="Posição no arquivo" aria-valuemin="1" aria-valuemax="1" aria-valuenow="1" title="Arraste ou clique para andar pelo arquivo"><div class="rgmark" id="rgmark"></div></div>
-    <span class="where" id="rg-where"></span>
+  <div class="tabsrow" id="tabsrow" hidden>
+    <nav class="tabs" role="tablist" aria-label="Visões do arquivo" id="tabs">
+      <button class="tab" role="tab" id="tab-data" aria-controls="panel-data" aria-selected="true" type="button">Dados</button>
+      <button class="tab" role="tab" id="tab-schema" aria-controls="panel-schema" aria-selected="false" tabindex="-1" type="button">Esquema<span class="count" id="schema-count"></span></button>
+      <button class="tab" role="tab" id="tab-meta" aria-controls="panel-meta" aria-selected="false" tabindex="-1" type="button">Metadados<span class="count" id="meta-count"></span></button>
+    </nav>
+    <span class="compact" id="compact-info"></span>
+    <button class="btn small" id="summary-toggle" type="button" aria-expanded="false" aria-controls="summary">Resumo <span aria-hidden="true" id="summary-caret">▾</span></button>
   </div>
-
-  <nav class="tabs" role="tablist" aria-label="Visões do arquivo" id="tabs" hidden>
-    <button class="tab" role="tab" id="tab-data" aria-controls="panel-data" aria-selected="true" type="button">Dados</button>
-    <button class="tab" role="tab" id="tab-schema" aria-controls="panel-schema" aria-selected="false" tabindex="-1" type="button">Esquema<span class="count" id="schema-count"></span></button>
-    <button class="tab" role="tab" id="tab-meta" aria-controls="panel-meta" aria-selected="false" tabindex="-1" type="button">Metadados<span class="count" id="meta-count"></span></button>
-  </nav>
+  <dl class="summary" id="summary" hidden></dl>
 
   <section class="panel" id="panel-data" role="tabpanel" aria-labelledby="tab-data" hidden>
     <div class="toolbar">
@@ -515,7 +540,7 @@ dialog::backdrop { background: rgb(8 14 17 / 45%); }
         <button class="btn small icon" id="pg-last" type="button" aria-label="Última página">»</button>
       </div>
       <form class="field" id="goto-form">
-        <label for="goto-row">Ir para a linha</label>
+        <label for="goto-row">Ir para</label>
         <input type="number" id="goto-row" min="1" step="1" inputmode="numeric">
         <button class="btn small" type="submit">Ir</button>
       </form>
@@ -529,9 +554,21 @@ dialog::backdrop { background: rgb(8 14 17 / 45%); }
       </label>
     </div>
     <p class="hint" id="cols-hint" hidden></p>
+    <div class="statusrow">
+    <div class="selbar" id="selbar" role="status" hidden>
+      <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="1.5" width="13" height="13" rx="3" fill="currentColor"/><path d="m4.5 8.2 2.3 2.3 4.7-5" fill="none" stroke="var(--surface)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <p><strong id="sel-text"></strong></p>
+      <button class="linklike" id="sel-clear" type="button">Desmarcar todas</button>
+    </div>
     <div class="qbar" id="qbar" role="status" hidden>
       <p id="qbar-text"></p>
       <button class="linklike" id="qbar-clear" type="button">Limpar busca, filtros e ordem</button>
+    </div>
+    </div>
+    <div class="rgmap" id="rgmap" hidden>
+      <span class="lbl" id="rg-label">Row groups</span>
+      <div class="rgbar" id="rgbar" role="slider" tabindex="0" aria-label="Posição no arquivo" aria-valuemin="1" aria-valuemax="1" aria-valuenow="1" title="Arraste ou clique para andar pelo arquivo"><div class="rgmark" id="rgmark"></div></div>
+      <span class="where" id="rg-where"></span>
     </div>
     <p class="inline-error" id="data-error" role="alert" hidden></p>
     <div class="grid-wrap" id="grid-wrap" tabindex="0" aria-label="Linhas do arquivo. Use as setas para andar entre as células e Enter para ver o valor completo.">
@@ -1968,6 +2005,7 @@ const state = {
   exportMode: 'options', cancelExport: false, copyText: null, clip: null, drag: null,
   muni: '', muniAuto: true, view: [],
   table: null, tableToken: 0, tableChain: null, query: null, queryToken: 0, result: null, rowNums: null, menu: null,
+  sel: null,
 }
 state.query = newQuery()
 const sleep = ms => new Promise(r => setTimeout(r, ms))
@@ -2079,9 +2117,11 @@ async function openSource(src, sample = false) {
   state.query = newQuery()
   state.result = null
   state.rowNums = null
+  state.sel = { marks: new Uint8Array(ctx.numRows), count: 0, anchor: null }
   $('q').value = ''
   closeMenu()
   renderQueryBar()
+  renderSelBar(0)
   state.rows = []
   $('grid').innerHTML = ''
   $('grid-empty').hidden = true
@@ -2110,8 +2150,8 @@ function renderFile() {
   $('fname').title = ctx.name
   $('fsize').textContent = bytesText(ctx.size)
   $('samplepill').hidden = !state.sample
-  $('sample-notice').hidden = !state.sample
-  $('tabs').hidden = false
+  $('sample-notice').hidden = !state.sample || storageGet('mcparquinho.aviso') === '0'
+  $('tabsrow').hidden = false
   $('export-btn').hidden = false
   $('schema-count').textContent = fmt(ctx.columns.length)
   $('meta-count').textContent = plural(ctx.rowGroups.length, 'row group', 'row groups')
@@ -2121,6 +2161,17 @@ function renderFile() {
   renderMuniSelect()
   renderSchema()
   renderMeta()
+}
+
+function storageGet(key) { try { return localStorage.getItem(key) } catch { return null } }
+function storageSet(key, value) { try { localStorage.setItem(key, value) } catch {} }
+
+function setSummaryOpen(open, remember = true) {
+  $('summary').hidden = !open
+  $('summary-toggle').setAttribute('aria-expanded', String(open))
+  $('summary-caret').textContent = open ? '▴' : '▾'
+  if (remember) storageSet('mcparquinho.resumo', open ? '1' : '0')
+  requestAnimationFrame(positionMarker)
 }
 
 function renderSummary() {
@@ -2138,7 +2189,8 @@ function renderSummary() {
   ]
   $('summary').innerHTML = tiles.map(([k, v, cls, title]) =>
     `<div class="tile"><dt>${k}</dt><dd class="${cls || ''}"${title ? ` title="${esc(title)}"` : ''}>${v}</dd></div>`).join('')
-  $('summary').hidden = false
+  $('compact-info').textContent = `${plural(ctx.numRows, 'linha', 'linhas')} · ${plural(ctx.columns.length, 'coluna', 'colunas')} · ${plural(ctx.rowGroups.length, 'row group', 'row groups')} · ${ctx.codecs.join(', ') || '—'}`
+  setSummaryOpen(storageGet('mcparquinho.resumo') === '1', false)
 }
 
 function renderRgMap() {
@@ -2328,7 +2380,15 @@ function togglePicker(show) {
   const open = show ?? picker.hidden
   picker.hidden = !open
   $('cols-btn').setAttribute('aria-expanded', String(open))
-  if (open) $('col-filter').focus()
+  if (!open) return
+  const r = $('cols-btn').getBoundingClientRect()
+  const vh = document.documentElement.clientHeight
+  const below = vh - r.bottom - 14
+  const above = r.top - 14
+  const up = below < 260 && above > below
+  picker.classList.toggle('up', up)
+  picker.style.maxHeight = `${Math.round(Math.max(160, up ? above : below))}px`
+  $('col-filter').focus()
 }
 
 // ---- município: optional column with the name for a code column ----
@@ -2656,14 +2716,35 @@ function closeMenu() {
   if (m?.anchor?.isConnected) m.anchor.focus({ preventScroll: true })
 }
 
+// Opens below the button when it fits, above when there is more room there, and otherwise
+// uses the whole window height; never leaves part of the menu outside the window.
 function placeMenu(anchor) {
   const menu = $('hmenu')
+  const vw = document.documentElement.clientWidth
+  const vh = document.documentElement.clientHeight
   const r = anchor.getBoundingClientRect()
+  menu.style.maxHeight = 'none'
+  menu.style.width = `${Math.min(310, vw - 16)}px`
   const w = menu.offsetWidth
-  menu.style.left = `${Math.max(8, Math.min(r.right - w, innerWidth - w - 8))}px`
-  const top = r.bottom + 4
-  menu.style.top = `${top}px`
-  menu.style.maxHeight = `${Math.max(240, innerHeight - top - 8)}px`
+  const natural = menu.scrollHeight
+  const below = vh - r.bottom - 12
+  const above = r.top - 12
+  let maxH
+  let top
+  if (natural <= below || below >= above) {
+    maxH = Math.min(natural, below)
+    top = r.bottom + 4
+  } else {
+    maxH = Math.min(natural, above)
+    top = r.top - 4 - maxH
+  }
+  if (maxH < Math.min(natural, 300)) {
+    maxH = Math.min(natural, vh - 16)
+    top = (vh - maxH) / 2
+  }
+  menu.style.maxHeight = `${Math.round(maxH)}px`
+  menu.style.top = `${Math.round(Math.max(8, top))}px`
+  menu.style.left = `${Math.round(Math.max(8, Math.min(r.right - w, vw - w - 8)))}px`
 }
 
 async function openMenu(name, anchor) {
@@ -2741,6 +2822,7 @@ function renderMenuList() {
   $('hm-note').textContent = !m.entries.length ? 'Nenhum valor nas linhas que passam pelos outros filtros.'
     : matches > shown.length ? `Mostrando ${fmt(shown.length)} de ${fmt(matches)} valores. Use a busca para achar outros.`
       : q && !matches ? 'Nenhum valor encontrado.' : ''
+  if (!m.placed && m.anchor?.isConnected) { m.placed = true; placeMenu(m.anchor) }
 }
 
 function applyMenu() {
@@ -2781,6 +2863,88 @@ function menuSort(dir) {
   if (!name) return
   closeMenu()
   commitQuery(q => { q.sort = dir ? { name, dir } : null })
+}
+
+// ---- row marks (checkbox next to the row number) ----
+const listIdx = pos => (state.result ? state.result[pos] : pos)
+
+function markRow(i, on) {
+  const sel = state.sel
+  if ((sel.marks[i] === 1) !== on) {
+    sel.marks[i] = on ? 1 : 0
+    sel.count += on ? 1 : -1
+  }
+}
+
+function markRange(a, b, on) {
+  for (let p = Math.min(a, b); p <= Math.max(a, b); p++) markRow(listIdx(p), on)
+}
+
+function markAllInList(on) {
+  const sel = state.sel
+  if (!state.result) {
+    sel.marks.fill(on ? 1 : 0)
+    sel.count = on ? sel.marks.length : 0
+  } else for (const i of state.result) markRow(i, on)
+  sel.anchor = null
+}
+
+function marksInList() {
+  const sel = state.sel
+  if (!state.result) return sel.count
+  let k = 0
+  for (const i of state.result) k += sel.marks[i]
+  return k
+}
+
+function renderSelBar(inList) {
+  const sel = state.sel
+  if (!sel || !sel.count) { $('selbar').hidden = true; return }
+  let text = plural(sel.count, 'linha marcada', 'linhas marcadas')
+  if (state.result && inList < sel.count) text += ` (${fmt(inList)} no resultado atual, ${fmt(sel.count - inList)} fora dele)`
+  $('sel-text').textContent = text
+  $('selbar').hidden = false
+}
+
+// Syncs the checkboxes, row tint, header box and counter with the marks.
+function refreshMarks() {
+  const sel = state.sel
+  if (!sel) return
+  const body = $('grid').tBodies[0]
+  if (body) {
+    for (let i = 0; i < body.rows.length; i++) {
+      const tr = body.rows[i]
+      const on = sel.marks[listIdx(state.rowStart + i)] === 1
+      tr.classList.toggle('sel', on)
+      const box = tr.querySelector('.selrow')
+      if (box) box.checked = on
+    }
+  }
+  const inList = marksInList()
+  const all = $('sel-all')
+  if (all) {
+    const total = listLength()
+    all.checked = total > 0 && inList === total
+    all.indeterminate = inList > 0 && inList < total
+  }
+  renderSelBar(inList)
+}
+
+function onMarkClick(e) {
+  const th = e.target.closest('th.rn')
+  if (!th || !state.sel) return
+  const box = th.querySelector('input[type="checkbox"]')
+  if (!box) return
+  if (e.target !== box) box.checked = !box.checked
+  if (th.closest('thead')) markAllInList(box.checked)
+  else {
+    const pos = state.rowStart + Number(box.dataset.r)
+    if (e.shiftKey && state.sel.anchor !== null) markRange(state.sel.anchor, pos, box.checked)
+    else markRow(listIdx(pos), box.checked)
+    state.sel.anchor = pos
+    if (e.shiftKey) getSelection()?.removeAllRanges()
+  }
+  refreshMarks()
 }
 
 // ---- data page ----
@@ -2888,7 +3052,8 @@ function renderGrid() {
   const fams = cols.map(c => family(c.desc))
   const view = viewColumns()
   state.view = view
-  let h = '<thead><tr><th class="rn" scope="col">#</th>'
+  let h = '<thead><tr><th class="rn" scope="col"><span class="selcell"><input type="checkbox" id="sel-all" ' +
+    'aria-label="Marcar todas as linhas da lista" title="Marcar ou desmarcar todas as linhas da lista atual"><span>#</span></span></th>'
   const q = state.query
   const hbtn = qname => {
     const filtered = q.filters.has(qname)
@@ -2904,7 +3069,8 @@ function renderGrid() {
   }
   h += '</tr></thead><tbody>'
   for (let i = 0; i < rows.length; i++) {
-    h += `<tr><th class="rn" scope="row">${fmt(state.rowNums ? state.rowNums[i] : rowStart + i + 1)}</th>`
+    const num = fmt(state.rowNums ? state.rowNums[i] : rowStart + i + 1)
+    h += `<tr><th class="rn" scope="row"><span class="selcell"><input type="checkbox" class="selrow" data-r="${i}" aria-label="Marcar linha ${num}"><span>${num}</span></span></th>`
     const row = rows[i]
     for (let k = 0; k < view.length; k++) {
       const vc = view[k]
@@ -2921,6 +3087,7 @@ function renderGrid() {
     h += '</tr>'
   }
   $('grid').innerHTML = h + '</tbody>'
+  refreshMarks()
   if (state.active) setActive(state.active.r, state.active.c, false)
 }
 
@@ -2974,10 +3141,20 @@ function onGridKey(e) {
     case 'End': setActive(a.r, state.view.length - 1); break
     case 'PageDown': if (state.page < pages - 1) goToPage(state.page + 1); break
     case 'PageUp': if (state.page > 0) goToPage(state.page - 1); break
-    case 'Enter': case ' ':
+    case 'Enter':
       if (!state.active) setActive(a.r, a.c)
       openDetail(state.active.r, state.active.c)
       break
+    case ' ': {
+      if (!state.active) setActive(a.r, a.c)
+      const pos = state.rowStart + state.active.r
+      const idx = listIdx(pos)
+      if (e.shiftKey && state.sel.anchor !== null) markRange(state.sel.anchor, pos, true)
+      else markRow(idx, state.sel.marks[idx] !== 1)
+      state.sel.anchor = pos
+      refreshMarks()
+      break
+    }
     default: return
   }
   e.preventDefault()
@@ -3588,6 +3765,25 @@ function wire() {
     else if (!$('picker').hidden) { togglePicker(false); $('cols-btn').focus() }
   })
 
+  $('grid').addEventListener('click', onMarkClick)
+  $('sel-clear').addEventListener('click', () => {
+    state.sel.marks.fill(0)
+    state.sel.count = 0
+    state.sel.anchor = null
+    refreshMarks()
+  })
+  let placing = 0
+  const follow = () => {
+    if ($('hmenu').hidden || placing) return
+    placing = requestAnimationFrame(() => {
+      placing = 0
+      if (state.menu?.anchor?.isConnected) placeMenu(state.menu.anchor)
+    })
+  }
+  $('grid-wrap').addEventListener('scroll', follow, { passive: true })
+  window.addEventListener('scroll', follow, { passive: true })
+  $('summary-toggle').addEventListener('click', () => setSummaryOpen($('summary').hidden))
+  $('sample-close').addEventListener('click', () => { $('sample-notice').hidden = true; storageSet('mcparquinho.aviso', '0') })
   $('grid').addEventListener('click', e => {
     if (e.target.closest('.hbtn')) return
     const td = e.target.closest('td')
